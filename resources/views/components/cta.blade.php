@@ -1,3 +1,7 @@
+<?php
+    $androidUrl = route('download.android');
+?>
+
 <section id="download" class="py-6 md:py-16 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- CTA Card -->
@@ -12,10 +16,6 @@
             <p class="text-sm sm:text-sm md:text-base text-gray-300 mb-6 md:mb-8 lg:mb-10 max-w-2xl mx-auto leading-relaxed px-4">
                 Join thousands of users dressing smarter with Stylo AI.
             </p>
-
-            <?php
-                $androidUrl = route('download.android');
-            ?>
 
             <!-- CTA Button -->
             <div class="flex justify-center px-4">

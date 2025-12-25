@@ -1,3 +1,7 @@
+<?php
+    $androidUrl = route('download.android');
+?>
+
 <section class="relative bg-linear-to-b from-purple-100 via-white to-white py-8 md:py-16 lg:py-24">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-4xl mx-auto">
@@ -18,7 +22,7 @@
             </p>
 
             <div class="flex justify-center">
-                <a href="#" class="inline-block bg-gray-900 hover:bg-gray-800 text-white text-base md:text-lg font-semibold px-8 md:px-12 py-4 md:py-5 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                <a href="<?php echo e($androidUrl); ?>" target="_blank" class="inline-block bg-gray-900 hover:bg-gray-800 text-white text-base md:text-lg font-semibold px-8 md:px-12 py-4 md:py-5 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                     Get Started for Free
                 </a>
             </div>
