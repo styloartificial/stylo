@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('scan_results', function (Blueprint $table) {
             $table->id();
-            $table->foreign('scan_id')->references('id')->on('scans')->onDelete('cascade');
-            $table->array('img_urls');
+            $table->foreignId('scan_id')->constrained('scans')->onDelete('cascade');
+            $table->json('img_urls');
             $table->string('summary');
             $table->timestamps();
         });

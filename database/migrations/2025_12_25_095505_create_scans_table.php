@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('scans', function (Blueprint $table) {
             $table->id();
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('ticket_id')->unique()->nullable();
             $table->string('title');
-            $table->foreign('scan_category_id')->references('id')->on('m_scan_categories')->onDelete('set null');
+            $table->foreignId('scan_category_id')->nullable()->constrained('m_scan_categories')->onDelete('set null');
             $table->enum('status', ['PENDING', 'COMPLETED', 'FAILED'])->default('PENDING');            
             $table->timestamps();
         });
