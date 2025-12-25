@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('scan_saves', function (Blueprint $table) {
             $table->id();
-            $table->foreign('scan_id')->references('id')->on('scans')->onDelete('cascade');
+            $table->foreignId('scan_id')->constrained('scans')->onDelete('cascade');
             $table->enum('type', ['FULL', 'PARTIAL'])->default('FULL');
-            $table->array('img_urls')->nullable();
+            $table->json('img_urls')->nullable();
             $table->string('product_name')->nullable();
             $table->float('rating')->nullable();
             $table->integer('count_purchase')->nullable();

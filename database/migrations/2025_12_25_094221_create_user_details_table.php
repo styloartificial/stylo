@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('user_details', function (Blueprint $table) {
             $table->id();
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->enum('gender', ['MALE', 'FEMALE'])->default('MALE');
             $table->date('date_of_birth');
             $table->float('height')->nullable();
             $table->float('weight')->nullable();
-            $table->foreign('skin_tone_id')->references('id')->on('m_skin_tones')->onDelete('set null');
+            $table->foreignId('skin_tone_id')->nullable()->constrained('m_skin_tones')->onDelete('set null');
             $table->timestamps();
         });
     }

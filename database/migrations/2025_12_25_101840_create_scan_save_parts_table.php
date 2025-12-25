@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('scan_save_parts', function (Blueprint $table) {
             $table->id();
-            $table->foreign('scan_save_id')->references('id')->on('scan_saves')->onDelete('cascade');
-            $table->array('img_urls');
+            $table->foreignId('scan_save_id')->constrained('scan_saves')->onDelete('cascade');
+            $table->json('img_urls');
             $table->string('product_name');
             $table->float('rating');
             $table->integer('count_purchase');
