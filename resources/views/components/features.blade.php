@@ -1,7 +1,8 @@
-<section id="features" class="py-16 md:py-24 lg:py-32 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<section id="features" class="py-16 md:py-24 lg:py-32 bg-white scroll-mt-16">
 
-        <div class="text-center max-w-3xl mx-auto mb-12 md:mb-16">
+    <div class="fade-up max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <div class="fade-up text-center max-w-3xl mx-auto mb-12 md:mb-16">
             <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 md:mb-6">
                 Why use Stylo?
             </h2>
@@ -66,4 +67,5 @@
 
         </div>
     </div>
+
 </section>

@@ -1,12 +1,16 @@
+<?php
+    $androidUrl = route('download.android');
+?>
+
 <footer class="bg-white border-t border-gray-200">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+    <div class="zoom-in max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
 
         <div class="flex flex-col lg:flex-row lg:justify-between gap-8 lg:gap-12">
 
             <div class="lg:max-w-sm">
                 <div class="flex items-center space-x-2 mb-4">
                     <img src="{{ asset('logo/logo.png') }}" alt="Stylo AI Logo" class="h-12 w-12">
-                    <span class="text-xl font-semibold text-gray-900">Stylo AI</span>
+                    <span class="text-xl font-bold text-gray-900">Stylo AI</span>
                 </div>
                 <p class="text-sm text-gray-500 leading-relaxed">
                     Your personal AI stylist in your pocket.<br>
@@ -38,12 +42,12 @@
                     <h3 class="text-sm font-semibold text-gray-900 mb-4">Product</h3>
                     <ul class="space-y-3">
                         <li>
-                            <a href="#" class="text-sm text-gray-500 hover:text-gray-900 transition-colors">
+                            <a href="#features" class="text-sm text-gray-500 hover:text-gray-900 transition-colors">
                                 Features
                             </a>
                         </li>
                         <li>
-                            <a href="#" class="text-sm text-gray-500 hover:text-gray-900 transition-colors">
+                            <a href="<?php echo e($androidUrl); ?>" target="_blank" class="text-sm text-gray-500 hover:text-gray-900 transition-colors">
                                 Download App
                             </a>
                         </li>
@@ -52,7 +56,6 @@
             </div>
         </div>
 
-        <!-- Bottom Bar - Copyright Centered -->
         <div class="mt-12 pt-8 border-t border-gray-200">
             <div class="text-center">
                 <p class="text-sm text-gray-400">
