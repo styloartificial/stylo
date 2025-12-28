@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
 use Illuminate\Http\Request;
@@ -14,7 +15,11 @@ Route::middleware('guest')->group(function() {
             Route::get('/skin-tone', [RegisterController::class, 'GetSkinTone']);
         });
 
-        Route::post('/login', [LoginController::class, 'login']);
+        Route::post('/login', [LoginController::class, 'Login']);
+
+        Route::post('/forgot-password')->group(function() {
+            Route::post('/send-otp', [ForgotPasswordController::class, 'SendOtp']);
+        });
     });
 });
 

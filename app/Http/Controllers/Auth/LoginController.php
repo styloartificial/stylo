@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Hash;
 
 class LoginController extends BaseController
 {
-    public function login(LoginRequest $request)
+    public function Login(LoginRequest $request)
     {
         try {
             $data = $request->validated();

@@ -1,0 +1,54 @@
+<?php
+
+namespace App\Http\Controllers\Auth;
+
+use App\Http\Controllers\BaseController;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\SendEmailRequest;
+use App\Mail\ForgotPasswordOTPMail;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+
+class ForgotPasswordController extends BaseController
+{
+    public function SendOtp(SendEmailRequest $request)
+    {
+        try {
+            $data = $request->validated();
+            $otp = rand(10000, 99999);
+            DB::table('password_reset_tokens')->updateOrInsert(
+                ['email' => $data['email']],
+                [
+                    'token' => Hash::make($otp),
+                    'created_at' => now()
+                ]
+            );
+
+            Mail::to($data['email'])->send(new ForgotPasswordOTPMail($otp));
+            
+            return $this->success(null, "OTP berhasil dikirimkan ke email Anda.");
+        } catch (\Throwable $th) {
+            return $this->serverError($th);
+        }
+    }
+
+    public function SubmitToken()
+    {
+        try {
+            // Code
+        } catch (\Throwable $th) {
+            return $this->serverError($th);
+        }
+    }
+
+    public function ChangePassword()
+    {
+        try {
+            // Code
+        } catch (\Throwable $th) {
+            return $this->serverError($th);
+        }
+    }
+}
