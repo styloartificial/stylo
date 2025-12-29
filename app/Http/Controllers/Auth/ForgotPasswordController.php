@@ -41,7 +41,7 @@ class ForgotPasswordController extends BaseController
                 <h1>{{ $otp }}</h1>
                 ");
             
-            $response = MailtrapClient::initSendingEmails(config('mailtrap_api_key'))->send($email);
+            $response = MailtrapClient::initSendingEmails(config('app.mailtrap_api_key'))->send($email);
             if($response->getStatusCode() == 200) return $this->success(null, "OTP berhasil dikirimkan ke email Anda.");
 
             return $this->clientError('Error send email.');            
