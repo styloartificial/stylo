@@ -84,6 +84,8 @@ return [
 
     'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),
 
+    'mailtrap_api_key' => env('MAILTRAP_API_KEY', ''),
+
     /*
     |--------------------------------------------------------------------------
     | Encryption Key

@@ -11,6 +11,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Mailtrap\MailtrapClient;
+use Mailtrap\Mime\MailtrapEmail;
+use Symfony\Component\Mime\Address;
 
 class ForgotPasswordController extends BaseController
 {
@@ -27,9 +30,19 @@ class ForgotPasswordController extends BaseController
                 ]
             );
 
-            Mail::to($data['email'])->send(new ForgotPasswordOTPMail($otp));
+            $email = (new MailtrapEmail())
+                ->from(new Address('stylo@styloartificial.my.id', 'Stylo Artificial'))
+                ->to(new Address($data['email']))
+                ->subject('StyloAI - Reset Password Token')
+                ->html("
+                <p>Berikut merupakan kode OTP untuk reset password akun Stylo Anda.</p>
+                <h1>{{ $otp }}</h1>
+                ");
+            
+            $response = MailtrapClient::initSendingEmails(config('mailtrap_api_key'))->send($email);
+            if($response->getStatusCode() == 200) return $this->success(null, "OTP berhasil dikirimkan ke email Anda.");
 
-            return $this->success(null, "OTP berhasil dikirimkan ke email Anda.");
+            return $this->clientError('Error send email.');            
         } catch (\Throwable $th) {
             return $this->serverError($th);
         }
