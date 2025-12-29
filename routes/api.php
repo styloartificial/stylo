@@ -15,9 +15,12 @@ Route::middleware('guest')->group(function() {
             Route::get('/skin-tone', [RegisterController::class, 'GetSkinTone']);
         });
 
-        Route::post('/login', [LoginController::class, 'Login']);
+        Route::prefix('/login')->group(function() {
+            Route::post('/', [LoginController::class, 'Login']);
+            Route::post('/google', [LoginController::class, 'LoginGoogle']);
+        });
 
-        Route::post('/forgot-password')->group(function() {
+        Route::prefix('/forgot-password')->group(function() {
             Route::post('/send-otp', [ForgotPasswordController::class, 'SendOtp']);
         });
     });

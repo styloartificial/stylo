@@ -34,7 +34,7 @@ class RegisterController extends BaseController
             $data['password'] = bcrypt($data['password']);
             
             $newUser = User::create($data)->assignRole('user');
-            $newUser->userDetails()->create([
+            $newUser->userDetail()->create([
                 'gender' => $data['gender'],
                 'date_of_birth' => $data['date_of_birth'],
                 'height' => $data['height'],
