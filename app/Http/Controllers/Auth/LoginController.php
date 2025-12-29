@@ -69,7 +69,7 @@ class LoginController extends BaseController
 
                 $user->userDetail()->create([
                     'gender' => $gender,
-                    'date_of_birth' => $googleUser['birthdate'],
+                    'date_of_birth' => null,
                     'height' => null,
                     'weight' => null,
                     'skin_tone_id' => null,
