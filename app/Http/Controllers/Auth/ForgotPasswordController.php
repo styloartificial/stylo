@@ -6,6 +6,7 @@ use App\Http\Controllers\BaseController;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\SendEmailRequest;
 use App\Mail\ForgotPasswordOTPMail;
+use App\Http\Requests\Auth\SubmitTokenRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -34,10 +35,24 @@ class ForgotPasswordController extends BaseController
         }
     }
 
-    public function SubmitToken()
+    public function SubmitToken(SubmitTokenRequest $request)
     {
         try {
-            // Code
+            $data = $request->validated();
+
+            $reset = DB::table('password_reset_tokens')
+            ->where('email', $data['email'])
+            ->first();
+
+            if (!$reset) {
+            return $this->clienterror('Token salah.');
+        }
+
+            if (!Hash::check($data['token'], $reset->token)) {
+                return $this->clienterror('Token salah.');
+        }
+
+            return $this->success(null, 'Success.');
         } catch (\Throwable $th) {
             return $this->serverError($th);
         }
