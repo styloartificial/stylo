@@ -7,6 +7,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\SendEmailRequest;
 use App\Mail\ForgotPasswordOTPMail;
 use App\Http\Requests\Auth\SubmitTokenRequest;
+use App\Http\Requests\Auth\ChangePasswordRequest;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -58,10 +60,26 @@ class ForgotPasswordController extends BaseController
         }
     }
 
-    public function ChangePassword()
+    public function ChangePassword(ChangePasswordRequest $request)
     {
         try {
-            // Code
+            $data = $request->validated();
+
+            $user = User::where('email', $data['email'])->first();
+
+            if (!$user) {
+                return $this->clientError("Email tidak ditemukan.");
+            }
+
+            $user->update([
+                'password' => Hash::make($data['new_password'])
+            ]);
+
+            DB::table('password_reset_tokens')
+                ->where('email', $data['email'])
+                ->delete();
+
+            return $this->success(null, "Password berhasil diubah.");
         } catch (\Throwable $th) {
             return $this->serverError($th);
         }

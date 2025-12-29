@@ -23,6 +23,7 @@ Route::middleware('guest')->group(function() {
         Route::prefix('/forgot-password')->group(function() {
             Route::post('/send-otp', [ForgotPasswordController::class, 'SendOtp']);
             Route::post('/submit-token', [ForgotPasswordController::class, 'SubmitToken']);
+            Route::post('/change-password', [ForgotPasswordController::class, 'ChangePassword']);
 
         });
     });
