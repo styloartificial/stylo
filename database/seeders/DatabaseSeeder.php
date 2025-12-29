@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
 
+        $this->call(AppHistorySeeder::class);
         $this->call(MScanCategorySeeder::class);
         $this->call(MSkinToneSeeder::class);
         $this->call(UserSeeder::class);
