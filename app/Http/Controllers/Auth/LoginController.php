@@ -65,7 +65,7 @@ class LoginController extends BaseController
                     'email' => $googleUser['email'],
                     'name' => $googleUser['name'],
                     'password' => bcrypt(uniqid())
-                ]);
+                ])->assignRole('user');
 
                 $user->userDetail()->create([
                     'gender' => $gender,
