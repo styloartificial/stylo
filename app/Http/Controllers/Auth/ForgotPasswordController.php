@@ -84,6 +84,14 @@ class ForgotPasswordController extends BaseController
                 return $this->clientError("Email tidak ditemukan.");
             }
 
+            $reset = DB::table('password_reset_tokens')
+                ->where('email', $data['email'])
+                ->first();
+            
+            if (!Hash::check($data['token'], $reset->token)) {
+                return $this->clienterror('Token salah.');
+            }
+
             $user->update([
                 'password' => Hash::make($data['new_password'])
             ]);

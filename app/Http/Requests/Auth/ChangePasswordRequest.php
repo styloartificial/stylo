@@ -25,6 +25,7 @@ class ChangePasswordRequest extends BaseRequest
         return [
             'email' => 'required|string|email|exists:users,email',
             'new_password' => 'required|string|confirmed',
+            'token' => 'required|string'
         ];
     }
 }
