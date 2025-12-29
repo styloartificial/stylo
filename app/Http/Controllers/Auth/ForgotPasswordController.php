@@ -30,7 +30,7 @@ class ForgotPasswordController extends BaseController
             );
 
             Mail::to($data['email'])->send(new ForgotPasswordOTPMail($otp));
-            
+
             return $this->success(null, "OTP berhasil dikirimkan ke email Anda.");
         } catch (\Throwable $th) {
             return $this->serverError($th);
@@ -43,16 +43,16 @@ class ForgotPasswordController extends BaseController
             $data = $request->validated();
 
             $reset = DB::table('password_reset_tokens')
-            ->where('email', $data['email'])
-            ->first();
+                ->where('email', $data['email'])
+                ->first();
 
             if (!$reset) {
-            return $this->clienterror('Token salah.');
-        }
+                return $this->clienterror('Token salah.');
+            }
 
             if (!Hash::check($data['token'], $reset->token)) {
                 return $this->clienterror('Token salah.');
-        }
+            }
 
             return $this->success(null, 'Success.');
         } catch (\Throwable $th) {
