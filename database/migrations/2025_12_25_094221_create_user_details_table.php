@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('user_details', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->enum('gender', ['MALE', 'FEMALE'])->default('MALE');
+            $table->enum('gender', ['MALE', 'FEMALE'])->nullable();
             $table->date('date_of_birth')->nullable();
             $table->float('height')->nullable();
             $table->float('weight')->nullable();
