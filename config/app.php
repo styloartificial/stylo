@@ -86,6 +86,8 @@ return [
 
     'mailtrap_api_key' => env('MAILTRAP_API_KEY', ''),
 
+    'firebase_credentials' => env('FIREBASE_CREDENTIALS', ''),
+
     /*
     |--------------------------------------------------------------------------
     | Encryption Key
