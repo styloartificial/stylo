@@ -10,6 +10,7 @@ class Scan extends Model
         'user_id',
         'ticket_id',
         'title',
+        'img_url',
         'scan_category_id',
         'status',
     ];
