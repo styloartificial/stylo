@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Dashboard\ScanController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -31,5 +32,9 @@ Route::middleware('guest')->group(function() {
 
 // Route middleware auth
 Route::middleware('auth:sanctum')->group(function() {
+
+    Route::prefix('core/master')->group(function () {
+        Route::get('/scan-categories', [ScanController::class, 'scanCategory']);
+    });
 
 });
