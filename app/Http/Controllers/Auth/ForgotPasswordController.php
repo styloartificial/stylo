@@ -33,13 +33,46 @@ class ForgotPasswordController extends BaseController
             );
 
             $email = (new MailtrapEmail())
-                ->from(new Address('stylo@styloartificial.my.id', 'Stylo Artificial'))
-                ->to(new Address($data['email']))
-                ->subject('StyloAI - Reset Password Token')
-                ->html("
-                <p>Berikut merupakan kode OTP untuk reset password akun Stylo Anda.</p>
-                <h1>{{ $otp }}</h1>
-                ");
+            ->from(new Address('stylo@styloartificial.my.id', 'Stylo Artificial'))
+            ->to(new Address($data['email']))
+            ->subject('StyloAI – Kode OTP Reset Password')
+            ->html("
+            <div style='font-family: Arial, Helvetica, sans-serif; background-color: #ffffff; padding: 40px 0;'>
+                <div style='max-width: 480px; margin: auto; background-color: #ffffff; border-radius: 16px; border: 2px solid #8F42DE; padding: 32px;'>
+
+                    <h2 style='color: #8F42DE; text-align: center; margin-bottom: 12px;'>
+                        Reset Password
+                    </h2>
+
+                    <p style='color: #8F42DE; font-size: 14px; text-align: center; margin-bottom: 28px;'>
+                        Kami menerima permintaan untuk mereset password akun <strong>StyloAI</strong>.
+                    </p>
+
+                    <div style='border: 2px dashed #8F42DE; border-radius: 14px; padding: 24px; text-align: center; margin-bottom: 28px;'>
+                        <p style='margin: 0 0 10px; font-size: 14px; color: #8F42DE;'>
+                            Kode OTP Anda
+                        </p>
+
+                        <div style='font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #8F42DE;'>
+                            {{ $otp }}
+                        </div>
+                    </div>
+
+                    <p style='font-size: 13px; color: #8F42DE; line-height: 1.6; margin-bottom: 16px;'>
+                        Kode OTP ini bersifat <strong>rahasia</strong> dan hanya berlaku dalam waktu terbatas.
+                        Jangan bagikan kode ini kepada siapa pun.
+                    </p>
+
+                    <hr style='border: none; border-top: 1px solid #8F42DE; margin: 28px 0;'>
+
+                    <p style='font-size: 12px; color: #8F42DE; text-align: center;'>
+                        © " . date('Y') . " Stylo Artificial
+                    </p>
+                </div>
+            </div>
+            ");
+
+
             
             $response = MailtrapClient::initSendingEmails(config('app.mailtrap_api_key'))->send($email);
             if($response->getStatusCode() == 200) return $this->success(null, "OTP berhasil dikirimkan ke email Anda.");
