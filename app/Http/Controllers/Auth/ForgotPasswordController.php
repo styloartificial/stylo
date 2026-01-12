@@ -45,7 +45,7 @@ class ForgotPasswordController extends BaseController
                     </h2>
 
                     <p style='color: #8F42DE; font-size: 14px; text-align: center; margin-bottom: 28px;'>
-                        Berikut ini adalah Kode untuk Kami untuk mereset password akun <strong>StyloAI</strong>.
+                        Berikut ini adalah kode untuk mereset password akun <strong>StyloAI</strong>.
                     </p>
 
                     <div style='border-radius: 14px; padding: 24px; text-align: center; margin-bottom: 28px;'>
