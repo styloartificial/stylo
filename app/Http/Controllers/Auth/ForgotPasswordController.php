@@ -45,23 +45,18 @@ class ForgotPasswordController extends BaseController
                     </h2>
 
                     <p style='color: #8F42DE; font-size: 14px; text-align: center; margin-bottom: 28px;'>
-                        Kami menerima permintaan untuk mereset password akun <strong>StyloAI</strong>.
+                        Berikut ini adalah Kode untuk Kami untuk mereset password akun <strong>StyloAI</strong>.
                     </p>
 
-                    <div style='border: 2px dashed #8F42DE; border-radius: 14px; padding: 24px; text-align: center; margin-bottom: 28px;'>
+                    <div style='border-radius: 14px; padding: 24px; text-align: center; margin-bottom: 28px;'>
                         <p style='margin: 0 0 10px; font-size: 14px; color: #8F42DE;'>
                             Kode OTP Anda
                         </p>
 
                         <div style='font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #8F42DE;'>
-                            {{ $otp }}
+                            $otp
                         </div>
                     </div>
-
-                    <p style='font-size: 13px; color: #8F42DE; line-height: 1.6; margin-bottom: 16px;'>
-                        Kode OTP ini bersifat <strong>rahasia</strong> dan hanya berlaku dalam waktu terbatas.
-                        Jangan bagikan kode ini kepada siapa pun.
-                    </p>
 
                     <hr style='border: none; border-top: 1px solid #8F42DE; margin: 28px 0;'>
 
