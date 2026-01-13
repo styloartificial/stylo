@@ -72,4 +72,22 @@ class S3Helper
 
         return Storage::disk('s3')->url($s3Path);
     }
+
+    public static function downloadToTemp(string $path, string $fileName): string
+    {
+        $s3Path = trim($path, '/') . '/' . $fileName;
+
+        if (!Storage::disk('s3')->exists($s3Path)) {
+            throw new \Exception("File not found in S3: {$s3Path}");
+        }
+
+        $fileContents = Storage::disk('s3')->get($s3Path);
+
+        $extension = pathinfo($fileName, PATHINFO_EXTENSION);
+        $tempFileName = (string) \Illuminate\Support\Str::uuid() . ($extension ? ".{$extension}" : '');
+
+        Storage::disk('local')->put("temp/{$tempFileName}", $fileContents);
+
+        return $tempFileName;
+    }
 }
