@@ -83,6 +83,11 @@ class S3Helper
 
         $fileContents = Storage::disk('s3')->get($s3Path);
 
+        $tempDir = storage_path('app/temp');
+        if (!is_dir($tempDir)) {
+            mkdir($tempDir, 0755, true);
+        }
+
         $extension = pathinfo($fileName, PATHINFO_EXTENSION);
         $tempFileName = (string) \Illuminate\Support\Str::uuid() . ($extension ? ".{$extension}" : '');
 
