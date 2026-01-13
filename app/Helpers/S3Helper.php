@@ -5,6 +5,7 @@ namespace App\Helpers;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\File;
 
 class S3Helper
 {
@@ -53,10 +54,17 @@ class S3Helper
 
         $s3Path = trim($path, '/') . '/' . $fileName;
 
+        $fullLocalPath = storage_path("app/{$localPath}");
+        $mimeType = File::mimeType($fullLocalPath);
+
         Storage::disk('s3')->put(
             $s3Path,
             Storage::disk('local')->get($localPath),
-            'public'
+            [
+                'visibility'   => 'public',
+                'ACL'          => 'public-read',
+                'ContentType'  => $mimeType,
+            ]
         );
 
         return $s3Path;
