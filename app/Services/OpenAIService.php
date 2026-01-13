@@ -76,7 +76,7 @@ class OpenAIService
     {
         $client = self::client();
 
-        $response = $client->images()->generate([
+        $response = $client->images()->create([
             'model' => 'gpt-image-1',
             'prompt' => $prompt,
             'size' => '1024x1024',
