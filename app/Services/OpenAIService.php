@@ -44,7 +44,6 @@ class OpenAIService
 
         foreach ($tempImages as $fileName) {
             $path = "temp/{$fileName}";
-
             if (!Storage::disk('local')->exists($path)) {
                 continue;
             }
@@ -58,7 +57,7 @@ class OpenAIService
         }
 
         $response = $client->chat()->create([
-            'model' => 'gpt-4.1',
+            'model' => 'gpt-4o-mini', 
             'messages' => [
                 [
                     'role' => 'user',
@@ -87,12 +86,10 @@ class OpenAIService
 
         foreach ($response->data as $img) {
             $uuid = (string) Str::uuid() . '.png';
-
             Storage::disk('local')->put(
                 "temp/{$uuid}",
                 base64_decode($img->b64_json)
             );
-
             $files[] = $uuid;
         }
 
@@ -111,8 +108,6 @@ class OpenAIService
     protected static function safeJsonDecode(string $text): array
     {
         $json = trim($text);
-
-        // remove ```json ``` if exists
         $json = preg_replace('/^```json|```$/m', '', $json);
 
         $decoded = json_decode($json, true);
