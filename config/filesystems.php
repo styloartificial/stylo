@@ -56,6 +56,7 @@ return [
             'endpoint' => env('AWS_ENDPOINT'),
             'use_path_style_endpoint' => true,
             'visibility' => 'public',
+            'throw' => true, 
         ],
 
     ],
