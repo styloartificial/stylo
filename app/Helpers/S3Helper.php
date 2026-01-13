@@ -91,7 +91,7 @@ class S3Helper
         $extension = pathinfo($fileName, PATHINFO_EXTENSION);
         $tempFileName = (string) \Illuminate\Support\Str::uuid() . ($extension ? ".{$extension}" : '');
 
-        Storage::disk('local')->put("temp/{$tempFileName}", $fileContents);
+        file_put_contents("{$tempDir}/{$tempFileName}", $fileContents);
 
         return $tempFileName;
     }
