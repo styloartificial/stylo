@@ -54,16 +54,12 @@ class S3Helper
 
         $s3Path = trim($path, '/') . '/' . $fileName;
 
-        $fullLocalPath = storage_path("app/{$localPath}");
-        $mimeType = File::mimeType($fullLocalPath);
-
         Storage::disk('s3')->put(
             $s3Path,
             Storage::disk('local')->get($localPath),
             [
-                'visibility'   => 'public',
-                'ACL'          => 'public-read',
-                'ContentType'  => $mimeType,
+                'visibility' => 'public',
+                'ACL'        => 'public-read',
             ]
         );
 
