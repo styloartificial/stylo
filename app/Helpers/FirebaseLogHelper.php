@@ -28,7 +28,7 @@ class FirebaseLogHelper {
             'id' => $lastId + 1,
             'title' => $title,
             'description' => $description,
-            'created_at' => now()
+            'created_at' => now()->format('Y-m-d h:i:s')
         ];
         $logsRef->push($newLog);
     }
