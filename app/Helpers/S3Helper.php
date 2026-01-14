@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Http\UploadedFile;
@@ -73,25 +74,50 @@ class S3Helper
         return Storage::disk('s3')->url($s3Path);
     }
 
-    public static function downloadToTemp(string $path, string $fileName): string
+    public static function downloadToTemp(string $source): string
     {
-        $s3Path = trim($path, '/') . '/' . $fileName;
-
-        if (!Storage::disk('s3')->exists($s3Path)) {
-            throw new \Exception("File not found in S3: {$s3Path}");
-        }
-
-        $fileContents = Storage::disk('s3')->get($s3Path);
-
         $tempDir = storage_path('app/temp');
+
         if (!is_dir($tempDir)) {
             mkdir($tempDir, 0755, true);
         }
 
-        $extension = pathinfo($fileName, PATHINFO_EXTENSION);
-        $tempFileName = (string) \Illuminate\Support\Str::uuid() . ($extension ? ".{$extension}" : '');
+        if (filter_var($source, FILTER_VALIDATE_URL)) {
 
-        file_put_contents("{$tempDir}/{$tempFileName}", $fileContents);
+            $response = Http::get($source);
+
+            if (!$response->successful()) {
+                throw new \Exception("Failed to download file from URL: {$source}");
+            }
+
+            $extension = pathinfo(
+                parse_url($source, PHP_URL_PATH),
+                PATHINFO_EXTENSION
+            );
+
+            $tempFileName = (string) Str::uuid() . ($extension ? ".{$extension}" : '');
+
+            file_put_contents(
+                "{$tempDir}/{$tempFileName}",
+                $response->body()
+            );
+
+            return $tempFileName;
+        }
+
+        if (!Storage::disk('s3')->exists($source)) {
+            throw new \Exception("File not found in S3: {$source}");
+        }
+
+        $fileContents = Storage::disk('s3')->get($source);
+
+        $extension = pathinfo($source, PATHINFO_EXTENSION);
+        $tempFileName = (string) Str::uuid() . ($extension ? ".{$extension}" : '');
+
+        file_put_contents(
+            "{$tempDir}/{$tempFileName}",
+            $fileContents
+        );
 
         return $tempFileName;
     }
