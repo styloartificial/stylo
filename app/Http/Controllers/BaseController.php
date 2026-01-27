@@ -37,7 +37,18 @@ class BaseController extends Controller
         string $message = "Internal Server Error.",
         int $status = 500
     ): JsonResponse {
+
         Log::error($exception);
+
+        if (config('app.debug')) {
+            return response()->json([
+                'success' => false,
+                'message' => $exception->getMessage(),
+                'file'    => $exception->getFile(),
+                'line'    => $exception->getLine(),
+                'trace'   => collect($exception->getTrace())->take(5),
+            ], 500);
+        }
 
         return response()->json([
             'success' => false,
