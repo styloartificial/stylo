@@ -41,7 +41,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/open-ticket', [ScanController::class, 'openTicket']);
     });
 
-    Route::get('/test-api', function () {
-        return response()->json(['ok' => true]);
-    });
+        Route::post('/log-scrap-process', [ScanController::class, 'logScrapProcess']);
+
 });

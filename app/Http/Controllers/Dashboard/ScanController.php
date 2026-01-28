@@ -13,6 +13,7 @@ use App\Helpers\FirebaseLogHelper;
 use App\Helpers\BuildPromptHelper;
 use App\Http\Requests\OpenTicketRequest;
 use Illuminate\Support\Facades\Redis;
+use App\Http\Requests\LogScrapProcessRequest;
 
 class ScanController extends BaseController
 {
@@ -108,4 +109,29 @@ class ScanController extends BaseController
             return $this->serverError($th);
         }
     }
+
+    public function logScrapProcess(LogScrapProcessRequest $request): JsonResponse
+    {
+        try {
+            // STEP 1: Ambil ticket_id dari request
+            $ticketId = $request->input('ticket_id');
+
+
+            // STEP 2: Ambil database Firebase
+            $db = FirebaseService::database();
+
+            // STEP 3: Log scrap process ke Firebase
+            FirebaseLogHelper::logScrapProcess(
+                $db,
+                $ticketId
+            );
+
+            // STEP 4: Return success dengan data null
+            return $this->success(null);
+
+        } catch (\Throwable $th) {
+            return $this->serverError($th);
+        }
+    }
+
 }
