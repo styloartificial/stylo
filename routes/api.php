@@ -42,5 +42,6 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
         Route::post('/log-scrap-process', [ScanController::class, 'logScrapProcess']);
+        Route::post('/close-ticket', [ScanController::class, 'closeTicket']);
 
 });

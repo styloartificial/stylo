@@ -14,6 +14,7 @@ use App\Helpers\BuildPromptHelper;
 use App\Http\Requests\OpenTicketRequest;
 use Illuminate\Support\Facades\Redis;
 use App\Http\Requests\LogScrapProcessRequest;
+use App\Http\Requests\CloseTicketRequest;
 
 class ScanController extends BaseController
 {
@@ -113,8 +114,10 @@ class ScanController extends BaseController
     public function logScrapProcess(LogScrapProcessRequest $request): JsonResponse
     {
         try {
+
+            $validated = $request->validated();
             // STEP 1: Ambil ticket_id dari request
-            $ticketId = $request->input('ticket_id');
+            $ticketId = $validated['ticket_id'];
 
 
             // STEP 2: Ambil database Firebase
@@ -134,4 +137,66 @@ class ScanController extends BaseController
         }
     }
 
+    public function closeTicket(CloseTicketRequest $request): JsonResponse
+    {
+        try {
+
+            // STEP 1: Ambil data hasil validasi
+            $validated = $request->validated();
+
+            $ticketId  = $validated['ticket_id'];
+
+            // STEP 2: Ambil database Firebase
+            $db = FirebaseService::database();
+
+            // STEP 3: Cek ticket di Firebase 
+            $ticketRef  = $db->getReference("tickets/{$ticketId}");
+            $ticketData = $ticketRef->getValue();
+
+            if (empty($ticketData)) {
+                return response()->json([
+                    'code'    => 400,
+                    'message' => 'Ticket not found.',
+                    'data'    => null,
+                ], 400);
+            }
+
+            // STEP 4: Hapus data Redis berdasarkan ticket_id (scrap_queue)
+            $queue = Redis::lrange('scrap_queue', 0, -1);
+            Redis::del('scrap_queue');
+
+            foreach ($queue as $item) {
+                $decoded = json_decode($item, true);
+
+                if (
+                    !isset($decoded['ticket_id']) ||
+                    $decoded['ticket_id'] !== $ticketId
+                ) {
+                    Redis::rpush('scrap_queue', $item);
+                }
+            }
+
+            // STEP 5: Update status scan di Firebase
+            $db->getReference("scans/{$ticketId}/status")
+                ->set('complete');
+
+            // STEP 6: Update status scan di database
+            $scan = Scan::where('ticket_id', $ticketId)->first();
+            if ($scan) {
+                $scan->status = 'COMPLETE';
+                $scan->save();
+            }
+
+            // STEP 7: Log generation completed ke Firebase
+            FirebaseLogHelper::logGenerationCompleted(
+                $db,
+                $ticketId
+            );
+
+            return $this->success(null);
+
+        } catch (\Throwable $th) {
+            return $this->serverError($th);
+        }
+    }
 }
