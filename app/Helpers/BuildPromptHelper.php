@@ -27,7 +27,7 @@ class BuildPromptHelper {
 		$scanImg = S3Helper::downloadToTemp($scan->img_url);
 		$scanCategoryName = $scan->scanCategory->title;
 		
-		$prompt = "Berdasarkan foto orang ini, buatkan summary outfit $scanCategoryName untuk $userGender, tinggi $userHeight cm, berat $userWeight kg, skin tone $userSkinTone. Sertakan rekomendasi merk, hasil dalam JSON {summary, products}. Dapatkan juga 3 foto orang ini dengan rekomendasi merk tersebut dengan 3 pose.";
+		$prompt = "Berdasarkan foto orang ini, buatkan summary outfit $scanCategoryName untuk $userGender, tinggi $userHeight cm, berat $userWeight kg, skin tone $userSkinTone. Sertakan rekomendasi merk, hasil dalam JSON {summary, products}. Summary dalam bentuk teks utuh, bukan json ataupun array. Dapatkan juga 3 foto terpisah orang ini dengan rekomendasi merk tersebut dengan 3 pose dan di setiap foto jangan ubah wajah orangnya.";
 		
 		$promptBuild = [
 			'prompt' => $prompt,
