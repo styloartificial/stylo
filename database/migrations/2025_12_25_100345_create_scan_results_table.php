@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('scan_id')->constrained('scans')->onDelete('cascade');
             $table->json('img_urls');
-            $table->string('summary');
+            $table->text('summary');
             $table->timestamps();
         });
     }

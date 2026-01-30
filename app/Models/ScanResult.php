@@ -12,6 +12,10 @@ class ScanResult extends Model
         'summary',
     ];
 
+    protected $casts = [
+        'img_urls' => 'array',
+    ];
+
     public function scan()
     {
         return $this->belongsTo(Scan::class, 'scan_id');
