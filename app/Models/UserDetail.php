@@ -13,6 +13,7 @@ class UserDetail extends Model
         'height',
         'weight',
         'skin_tone_id',
+        'img_url'
     ];
 
     public function user()
