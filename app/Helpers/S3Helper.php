@@ -6,21 +6,37 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\File;
 
 class S3Helper
 {
+    protected static function baseUrl(): string
+    {
+        return config('services.supabase.url') . '/storage/v1';
+    }
+
+    protected static function apiKey(): string
+    {
+        return config('services.supabase.key');
+    }
+
+    protected static function bucket(): string
+    {
+        return config('services.supabase.bucket');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | TEMP STORAGE (LOCAL)
+    |--------------------------------------------------------------------------
+    */
+
     public static function storeFileTemp(UploadedFile $file): string
     {
         $uuid = (string) Str::uuid();
         $extension = $file->getClientOriginalExtension();
         $fileName = "{$uuid}.{$extension}";
 
-        Storage::disk('local')->putFileAs(
-            'temp',
-            $file,
-            $fileName
-        );
+        Storage::disk('local')->putFileAs('temp', $file, $fileName);
 
         return $fileName;
     }
@@ -45,6 +61,12 @@ class S3Helper
             : false;
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | SUPABASE STORAGE
+    |--------------------------------------------------------------------------
+    */
+
     public static function storeFileToS3(string $path, string $fileName): string
     {
         $localPath = "temp/{$fileName}";
@@ -53,25 +75,33 @@ class S3Helper
             throw new \Exception("Temp file not found: {$fileName}");
         }
 
-        $s3Path = trim($path, '/') . '/' . $fileName;
+        $fileContent = Storage::disk('local')->get($localPath);
 
-        Storage::disk('s3')->put(
-            $s3Path,
-            Storage::disk('local')->get($localPath),
-            [
-                'visibility' => 'public',
-                'ACL'        => 'public-read',
-            ]
+        $supabasePath = trim($path, '/') . '/' . $fileName;
+
+        $response = Http::withHeaders([
+            'apikey'        => self::apiKey(),
+            'Authorization' => 'Bearer ' . self::apiKey(),
+            'Content-Type'  => 'application/octet-stream',
+        ])->post(
+            self::baseUrl() . "/object/" . self::bucket() . "/" . $supabasePath,
+            $fileContent
         );
 
-        return $s3Path;
+        if (!$response->successful()) {
+            throw new \Exception("Upload failed: " . $response->body());
+        }
+
+        return $supabasePath;
     }
 
     public static function getUrlFileS3(string $path, string $fileName): string
     {
-        $s3Path = trim($path, '/') . '/' . $fileName;
+        $supabasePath = trim($path, '/') . '/' . $fileName;
 
-        return Storage::disk('s3')->url($s3Path);
+        return config('services.supabase.url') .
+            "/storage/v1/object/public/" .
+            self::bucket() . "/" . $supabasePath;
     }
 
     public static function downloadToTemp(string $source): string
@@ -82,6 +112,7 @@ class S3Helper
             mkdir($tempDir, 0755, true);
         }
 
+        // 🔹 Jika URL langsung
         if (filter_var($source, FILTER_VALIDATE_URL)) {
 
             $response = Http::get($source);
@@ -105,18 +136,23 @@ class S3Helper
             return $tempFileName;
         }
 
-        if (!Storage::disk('s3')->exists($source)) {
-            throw new \Exception("File not found in S3: {$source}");
-        }
+        // 🔹 Jika dari Supabase Storage
+        $fileUrl = config('services.supabase.url') .
+            "/storage/v1/object/public/" .
+            self::bucket() . "/" . $source;
 
-        $fileContents = Storage::disk('s3')->get($source);
+        $response = Http::get($fileUrl);
+
+        if (!$response->successful()) {
+            throw new \Exception("File not found in Supabase: {$source}");
+        }
 
         $extension = pathinfo($source, PATHINFO_EXTENSION);
         $tempFileName = (string) Str::uuid() . ($extension ? ".{$extension}" : '');
 
         file_put_contents(
             "{$tempDir}/{$tempFileName}",
-            $fileContents
+            $response->body()
         );
 
         return $tempFileName;

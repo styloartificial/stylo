@@ -162,19 +162,19 @@ class ScanController extends BaseController
             }
 
             // STEP 4: Hapus data Redis berdasarkan ticket_id (scrap_queue)
-            $queue = Redis::lrange('scrap_queue', 0, -1);
-            Redis::del('scrap_queue');
+            // $queue = Redis::lrange('scrap_queue', 0, -1);
+            // Redis::del('scrap_queue');
 
-            foreach ($queue as $item) {
-                $decoded = json_decode($item, true);
+            // foreach ($queue as $item) {
+            //     $decoded = json_decode($item, true);
 
-                if (
-                    !isset($decoded['ticket_id']) ||
-                    $decoded['ticket_id'] !== $ticketId
-                ) {
-                    Redis::rpush('scrap_queue', $item);
-                }
-            }
+            //     if (
+            //         !isset($decoded['ticket_id']) ||
+            //         $decoded['ticket_id'] !== $ticketId
+            //     ) {
+            //         Redis::rpush('scrap_queue', $item);
+            //     }
+            // }
 
             // STEP 5: Update status scan di Firebase
             $db->getReference("scans/{$ticketId}/status")
@@ -183,7 +183,7 @@ class ScanController extends BaseController
             // STEP 6: Update status scan di database
             $scan = Scan::where('ticket_id', $ticketId)->first();
             if ($scan) {
-                $scan->status = 'COMPLETE';
+                $scan->status = 'COMPLETED';
                 $scan->save();
             }
 
