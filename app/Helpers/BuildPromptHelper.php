@@ -52,7 +52,7 @@ class BuildPromptHelper {
 			}
 			
 			$scan->scanResult()->create([
-				'summary' => $result['analysis']['summary'],
+				'summary' => $result['analysis']['summary'] ?? null,
 				'img_urls' => $summaryUrls
 			]);
 			

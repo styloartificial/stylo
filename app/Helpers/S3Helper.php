@@ -82,11 +82,11 @@ class S3Helper
         $response = Http::withHeaders([
             'apikey'        => self::apiKey(),
             'Authorization' => 'Bearer ' . self::apiKey(),
-            'Content-Type'  => 'application/octet-stream',
-        ])->post(
-            self::baseUrl() . "/object/" . self::bucket() . "/" . $supabasePath,
-            $fileContent
-        );
+        ])->attach(
+            'file',
+            $fileContent,
+            $fileName
+        )->post(self::baseUrl() . "/object/" . self::bucket() . "/" . $supabasePath);
 
         if (!$response->successful()) {
             throw new \Exception("Upload failed: " . $response->body());

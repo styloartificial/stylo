@@ -44,20 +44,22 @@ class OpenAIService
 
         foreach ($tempImages as $fileName) {
             $path = "temp/{$fileName}";
-            if (!Storage::disk('local')->exists($path)) {
+            $fullPath = Storage::disk('local')->path($path);
+
+            if (!file_exists($fullPath)) {
                 continue;
             }
 
             $content[] = [
                 'type' => 'image_url',
                 'image_url' => [
-                    'url' => self::tempFileToBase64($path),
+                    'url' => self::tempFileToBase64($fullPath), // kirim full path
                 ],
             ];
         }
 
         $response = $client->chat()->create([
-            'model' => 'gpt-4o-mini', 
+            'model' => 'gpt-4o-mini',
             'messages' => [
                 [
                     'role' => 'user',
@@ -96,9 +98,8 @@ class OpenAIService
         return $files;
     }
 
-    protected static function tempFileToBase64(string $path): string
+    protected static function tempFileToBase64(string $fullPath): string
     {
-        $fullPath = storage_path("app/{$path}");
         $mime = mime_content_type($fullPath);
         $data = base64_encode(file_get_contents($fullPath));
 

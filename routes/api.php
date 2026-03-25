@@ -38,10 +38,15 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/scan-categories', [ScanController::class, 'scanCategory']);
         });
 
+        Route::post(
+            '/validate-image-by-profile-gender',
+            [ScanController::class, 'validateImageByProfileGender']
+        );
+
+
         Route::post('/open-ticket', [ScanController::class, 'openTicket']);
     });
 
-        Route::post('/log-scrap-process', [ScanController::class, 'logScrapProcess']);
-        Route::post('/close-ticket', [ScanController::class, 'closeTicket']);
-
+    Route::post('/log-scrap-process', [ScanController::class, 'logScrapProcess']);
+    Route::post('/close-ticket', [ScanController::class, 'closeTicket']);
 });

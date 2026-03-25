@@ -15,6 +15,8 @@ use App\Http\Requests\OpenTicketRequest;
 use Illuminate\Support\Facades\Redis;
 use App\Http\Requests\LogScrapProcessRequest;
 use App\Http\Requests\CloseTicketRequest;
+use App\Http\Requests\ValidateImageByProfileGenderRequest;
+use App\Services\OpenAIService;
 
 class ScanController extends BaseController
 {
@@ -25,22 +27,59 @@ class ScanController extends BaseController
         return $this->success($categories);
     }
 
+    public function validateImageByProfileGender(ValidateImageByProfileGenderRequest $request): JsonResponse
+    {
+        try {
+            $user = $request->user();
+            $gender = strtolower($user->userDetail->gender);
+
+            $file = $request->file('img_url');
+
+            if (!$file) {
+                return response()->json([
+                    'code' => 400,
+                    'message' => 'Image is required',
+                    'data' => null
+                ], 400);
+            }
+
+            $tempFileName = S3Helper::storeFileTemp($file);
+
+            $prompt = "Berdasarkan ini, apakah ini gambar orang dengan gender $gender? Berikan result hanya true atau false";
+
+            $payload = [
+                'prompt' => $prompt,
+                'temp_images' => [$tempFileName],
+                'generate_images' => 0
+            ];
+
+            $result = OpenAIService::run($payload);
+            $rawResult = strtolower(trim($result['analysis']['result'] ?? ''));
+            $isValid = str_contains($rawResult, 'true');
+
+            S3Helper::removeFileTemp($tempFileName);
+
+            return $this->success($isValid);
+        } catch (\Throwable $e) {
+            if (isset($tempFileName)) {
+                S3Helper::removeFileTemp($tempFileName);
+            }
+
+            return $this->serverError($e);
+        }
+    }
+
     public function openTicket(OpenTicketRequest $request): JsonResponse
     {
+        
         $db = FirebaseService::database();
         try {
-
-            // STEP 1: Validasi request
             $validated = $request->validated();
-
-            // STEP 2: Generate ticket ID
             $ticketId = (string) Str::uuid();
 
-            // STEP 3: Simpan image ke storage/temp
             $file         = $request->file('img_url');
             $tempFileName = S3Helper::storeFileTemp($file);
 
-            // STEP 4: Upload ke S3
             S3Helper::storeFileToS3("scans/{$ticketId}", $tempFileName);
             $imgUrl = S3Helper::getUrlFileS3("scans/{$ticketId}", $tempFileName);
 
@@ -52,25 +91,18 @@ class ScanController extends BaseController
                 'scan_category_id' => $validated['scan_category_id'],
             ];
 
-            // STEP 5: Simpan data scan ke database
             $scan = Scan::create($dataScan);
-
-            // STEP 6: Log ticket queued (Firebase)
             FirebaseLogHelper::logTicketQueued(
                 $db,
                 $ticketId
             );
 
-            // STEP 7: Build prompt (generate products)
             $products = BuildPromptHelper::run($scan);
-
-            // STEP 8: Log scrap prepared
             FirebaseLogHelper::logScrapPrepared(
                 $db,
                 $ticketId
             );
 
-            // STEP 9–10: Format products
             $productsFormatted = collect($products)
                 ->map(function ($item) {
                     return trim(
@@ -83,7 +115,6 @@ class ScanController extends BaseController
                 ->values()
                 ->toArray();
 
-            // STEP 11: Prepare Redis payload
             $sendToRedis = [
                 'ticket_id'  => $ticketId,
                 'products'   => $productsFormatted,
@@ -116,7 +147,6 @@ class ScanController extends BaseController
         try {
 
             $validated = $request->validated();
-            // STEP 1: Ambil ticket_id dari request
             $ticketId = $validated['ticket_id'];
 
 
