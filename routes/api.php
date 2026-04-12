@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Dashboard\ScanController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Dashboard\ProfileController;
 
 // Route middleware guest
 Route::middleware('guest')->group(function () {
@@ -17,7 +18,6 @@ Route::middleware('guest')->group(function () {
         });
 
         Route::prefix('/login')->group(function () {
-            Route::post('/', [LoginController::class, 'Login']);
             Route::post('/google', [LoginController::class, 'LoginGoogle']);
         });
 
@@ -49,4 +49,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/log-scrap-process', [ScanController::class, 'logScrapProcess']);
     Route::post('/close-ticket', [ScanController::class, 'closeTicket']);
+
+    Route::get('/profile', [ProfileController::class, 'index']);
 });
