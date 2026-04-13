@@ -7,6 +7,7 @@ use App\Http\Controllers\Dashboard\ScanController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Dashboard\ProfileController;
+use App\Http\Controllers\Api\ScraperController;
 
 // Route middleware guest
 Route::middleware('guest')->group(function () {
@@ -52,4 +53,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/close-ticket', [ScanController::class, 'closeTicket']);
 
     Route::get('/profile', [ProfileController::class, 'index']);
+});
+
+Route::prefix('scraper')->middleware(['auth:sanctum', 'role:Scraper'])->group(function () {
+    Route::get('get-oldest-ticket-request', [ScraperController::class, 'getOldestTicketRequest']);
+    Route::post('set-done-ticket-request',  [ScraperController::class, 'setDoneTicketRequest']);
 });
