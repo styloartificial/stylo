@@ -9,11 +9,6 @@ use Illuminate\Http\Request;
 
 class ScraperController extends BaseController
 {
-    /*
-    |--------------------------------------------------------------------------
-    | GET /api/scraper/get-oldest-ticket-request
-    |--------------------------------------------------------------------------
-    */
     public function getOldestTicketRequest(): JsonResponse
     {
         try {
@@ -63,9 +58,11 @@ class ScraperController extends BaseController
         try {
             $request->validate([
                 'ticket_request_id' => 'required|string',
+                'storedData'        => 'required|array', 
             ]);
 
-            $id = $request->input('ticket_request_id');
+            $id         = $request->input('ticket_request_id');
+            $storedData = $request->input('storedData'); 
 
             $db  = FirebaseService::database();
             $ref = $db->getReference("ticket-request/{$id}");
@@ -80,6 +77,7 @@ class ScraperController extends BaseController
                 ], 400);
             }
 
+            $ref->update(['data' => $storedData]);
             $ref->update(['status' => 'success']);
 
             return $this->success(null);

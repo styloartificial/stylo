@@ -21,6 +21,7 @@ Route::middleware('guest')->group(function () {
         Route::prefix('/login')->group(function () {
             Route::post('/', [LoginController::class, 'Login']);
             Route::post('/google', [LoginController::class, 'LoginGoogle']);
+            Route::post('/scraper', [LoginController::class, 'LoginScraper']);
         });
 
         Route::prefix('/forgot-password')->group(function () {

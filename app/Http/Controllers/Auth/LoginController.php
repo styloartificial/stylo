@@ -37,6 +37,34 @@ class LoginController extends BaseController
         }
     }
 
+    public function LoginScraper(LoginRequest $request)
+    {
+        try {
+            $data = $request->validated();
+
+            $user = User::where('email', $data['email'])->first();
+
+            if (!$user || !Hash::check($data['password'], $user->password)) {
+                return $this->clientError('Email atau password salah.');
+            }
+
+            if (!$user->hasRole('Scraper')) {
+                return $this->clientError('User tidak memiliki akses scraper.');
+            }
+
+            $token = $user->createToken('StyloartificialToken')->plainTextToken;
+
+            $user->load('userDetail', 'userDetail.skinTone');
+
+            return $this->success([
+                'token' => $token,
+                'user' => $user
+            ], 'Login berhasil');
+        } catch (\Throwable $th) {
+            return $this->serverError($th);
+        }
+    }
+
     public function LoginGoogle(LoginGoogleRequest $request)
     {
         try {

@@ -12,7 +12,6 @@ use App\Helpers\S3Helper;
 use App\Helpers\FirebaseLogHelper;
 use App\Helpers\BuildPromptHelper;
 use App\Http\Requests\OpenTicketRequest;
-use Illuminate\Support\Facades\Redis;
 use App\Http\Requests\LogScrapProcessRequest;
 use App\Http\Requests\CloseTicketRequest;
 use App\Http\Requests\ValidateImageByProfileGenderRequest;
@@ -71,7 +70,6 @@ class ScanController extends BaseController
 
     public function openTicket(OpenTicketRequest $request): JsonResponse
     {
-        
         $db = FirebaseService::database();
         try {
             $validated = $request->validated();
@@ -92,16 +90,10 @@ class ScanController extends BaseController
             ];
 
             $scan = Scan::create($dataScan);
-            FirebaseLogHelper::logTicketQueued(
-                $db,
-                $ticketId
-            );
+            FirebaseLogHelper::logTicketQueued($db, $ticketId);
 
             $products = BuildPromptHelper::run($scan);
-            FirebaseLogHelper::logScrapPrepared(
-                $db,
-                $ticketId
-            );
+            FirebaseLogHelper::logScrapPrepared($db, $ticketId);
 
             $productsFormatted = collect($products)
                 ->map(function ($item) {
@@ -115,22 +107,16 @@ class ScanController extends BaseController
                 ->values()
                 ->toArray();
 
-            $sendToRedis = [
+            // STEP 12: Log scrap queued
+            FirebaseLogHelper::logScrapQueued($db, $ticketId);
+
+            // STEP 13: Push ke Firebase
+            $db->getReference("ticket-request")->push([
                 'ticket_id'  => $ticketId,
                 'products'   => $productsFormatted,
+                'status'     => 'pending',
                 'created_at' => now()->toDateTimeString(),
-            ];
-
-            return $this->success($sendToRedis); // --- FOR TESTING PURPOSE ---
-
-            // STEP 12: Log scrap queued
-            FirebaseLogHelper::logScrapQueued(
-                $db,
-                $ticketId
-            );
-
-            // STEP 13: Push ke Redis
-            Redis::rpush('scrap_queue', json_encode($sendToRedis));
+            ]);
 
             // STEP 14: Return success
             return $this->success([
@@ -153,7 +139,7 @@ class ScanController extends BaseController
             // STEP 2: Ambil database Firebase
             $db = FirebaseService::database();
 
-            // STEP 3: Log scrap process ke Firebase
+            // STEP 3: Log scrap process ke Firebase 
             FirebaseLogHelper::logScrapProcess(
                 $db,
                 $ticketId

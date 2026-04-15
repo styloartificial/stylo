@@ -14,7 +14,7 @@ class UserScraperSeeder extends Seeder
         $role = Role::firstOrCreate(['name' => 'Scraper', 'guard_name' => 'web']);
 
         $user = User::firstOrCreate(
-            ['email' => 'stylo.artificial@gmail.com'],
+            ['email' => 'stylo.scraper@gmail.com'],
             [
                 'name'     => 'Stylo Scraper',
                 'password' => Hash::make('scraper_secret_password'),
