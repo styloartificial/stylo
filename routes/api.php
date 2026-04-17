@@ -18,6 +18,7 @@ Route::middleware('guest')->group(function () {
         });
 
         Route::prefix('/login')->group(function () {
+            Route::post('/', [LoginController::class, 'Login']);
             Route::post('/google', [LoginController::class, 'LoginGoogle']);
         });
 
@@ -50,5 +51,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/log-scrap-process', [ScanController::class, 'logScrapProcess']);
     Route::post('/close-ticket', [ScanController::class, 'closeTicket']);
 
-    Route::get('/profile', [ProfileController::class, 'index']);
+    // Route::get('/profile', [ProfileController::class, 'index']);
+    Route::prefix('profile')->group(function () {
+        Route::get('/', [ProfileController::class, 'index']);
+        Route::get('/skin-tone', [ProfileController::class, 'getSkinTone']);
+    });
 });

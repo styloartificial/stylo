@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\BaseController;
+use App\Models\MSkinTone;
 use Illuminate\Http\Request;
 use Throwable;
 
@@ -39,6 +40,33 @@ class ProfileController extends BaseController
             ]);
 
         } catch (Throwable $th) {
+            return $this->serverError($th);
+        }
+    }
+
+    public function getSkinTone()
+    {
+        try {
+            // Mengambil semua data dari table m_skin_tones
+            $skinTones = MSkinTone::all();
+
+            // Mapping agar output sesuai dengan permintaan (title -> name)
+            $formattedData = $skinTones->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'name' => $item->title, // Mengubah 'title' menjadi 'name' sesuai dokumentasi API
+                    'description' => $item->description,
+                ];
+            });
+
+            return response()->json([
+                'code' => 200,
+                'message' => 'Success.',
+                'data' => $formattedData
+            ]);
+
+        } catch (Throwable $th) {
+            // Menggunakan method error handling dari BaseController kamu
             return $this->serverError($th);
         }
     }
