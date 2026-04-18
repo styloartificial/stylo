@@ -57,6 +57,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('profile')->group(function () {
         Route::get('/', [ProfileController::class, 'index']);
         Route::get('/skin-tone', [ProfileController::class, 'getSkinTone']);
+        Route::patch('/', [ProfileController::class, 'update']);
+        Route::post('/change-password', [ProfileController::class, 'changePassword']);
     });
 });
 
