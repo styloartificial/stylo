@@ -53,7 +53,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/log-scrap-process', [ScanController::class, 'logScrapProcess']);
     Route::post('/close-ticket', [ScanController::class, 'closeTicket']);
 
-    Route::get('/profile', [ProfileController::class, 'index']);
+    // Route::get('/profile', [ProfileController::class, 'index']);
+    Route::prefix('profile')->group(function () {
+        Route::get('/', [ProfileController::class, 'index']);
+        Route::get('/skin-tone', [ProfileController::class, 'getSkinTone']);
+        Route::patch('/', [ProfileController::class, 'update']);
+        Route::post('/change-password', [ProfileController::class, 'changePassword']);
+    });
 });
 
 Route::prefix('scraper')->middleware(['auth:sanctum', 'role:Scraper'])->group(function () {
