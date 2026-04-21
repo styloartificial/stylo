@@ -21,7 +21,9 @@ class ScanController extends BaseController
 {
     public function scanCategory(): JsonResponse
     {
-        $categories = MScanCategory::select('id', 'title', 'icon')->get();
+        $categories = MScanCategory::select('id', 'title', 'icon', 'type')
+            ->get()
+            ->groupBy('type');
 
         return $this->success($categories);
     }
@@ -29,6 +31,7 @@ class ScanController extends BaseController
     public function validateImageByProfileGender(ValidateImageByProfileGenderRequest $request): JsonResponse
     {
         try {
+            
             $user = $request->user();
             $gender = strtolower($user->userDetail->gender);
 
@@ -44,7 +47,8 @@ class ScanController extends BaseController
 
             $tempFileName = S3Helper::storeFileTemp($file);
 
-            $prompt = "Berdasarkan ini, apakah ini gambar orang dengan gender $gender? Berikan result hanya true atau false";
+            // sesudah
+            $prompt = "Look at this image carefully. Is there a person in this image whose gender appears to be $gender? Be lenient - if the person could reasonably be $gender, answer true. Answer with only the word true or false, nothing else.";
 
             $payload = [
                 'prompt' => $prompt,
