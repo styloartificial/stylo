@@ -59,6 +59,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/skin-tone', [ProfileController::class, 'getSkinTone']);
         Route::patch('/', [ProfileController::class, 'update']);
         Route::post('/change-password', [ProfileController::class, 'changePassword']);
+        Route::post('/change-img-url', [ProfileController::class, 'changeImgUrl']);
     });
 });
 
