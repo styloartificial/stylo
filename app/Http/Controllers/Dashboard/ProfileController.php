@@ -6,6 +6,7 @@ use App\Http\Controllers\BaseController;
 use App\Models\MSkinTone;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Throwable;
 
 class ProfileController extends BaseController
@@ -28,7 +29,7 @@ class ProfileController extends BaseController
                     'skin_tone_id' => $user->userDetail?->skin_tone_id,
                     'skin_tone' => $user->userDetail?->skinTone ? [
                         'id' => $user->userDetail->skinTone->id,
-                        'name' => $user->userDetail->skinTone->name,
+                        'name' => $user->userDetail->skinTone->title,
                         'description' => $user->userDetail->skinTone->description
                     ] : null
                 ]
@@ -163,6 +164,52 @@ class ProfileController extends BaseController
             return response()->json([
                 'code' => 200,
                 'message' => 'Success change password.',
+                'data' => null
+            ]);
+
+        } catch (Throwable $th) {
+            return $this->serverError($th);
+        }
+    }
+
+    public function changeImgUrl(Request $request)
+    {
+        try {
+            $user = $request->user();
+
+            // 1. Validasi Input
+            $request->validate([
+                'img' => ['required', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'] // limit 2MB
+            ]);
+
+            // 2. Proses Upload File
+            if ($request->hasFile('img')) {
+                $file = $request->file('img');
+                
+                // Buat nama file unik: user_id_timestamp.ekstensi
+                $fileName = $user->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+                
+                // Simpan ke folder 'public/profile_images'
+                $path = $file->storeAs('profile_images', $fileName, 'public');
+                $url = asset('storage/' . $path);
+
+                // 3. Hapus foto lama jika ada (opsional tapi disarankan)
+                if ($user->userDetail && $user->userDetail->img_url) {
+                    // Ambil path relatif dari URL lama untuk dihapus dari storage
+                    $oldPath = str_replace(asset('storage/'), '', $user->userDetail->img_url);
+                    Storage::disk('public')->delete($oldPath);
+                }
+
+                // 4. Update Database
+                $user->userDetail()->updateOrCreate(
+                    ['user_id' => $user->id],
+                    ['img_url' => $url]
+                );
+            }
+
+            return response()->json([
+                'code' => 200,
+                'message' => 'Success change profile image.',
                 'data' => null
             ]);
 
