@@ -9,7 +9,6 @@ class MScanCategory extends Model
     protected $fillable = [
         'title',
         'icon',
+        'type', // ini yang belum ada
     ];
-
-    // public function scans() { }
 }
