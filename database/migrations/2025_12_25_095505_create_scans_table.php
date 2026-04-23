@@ -17,8 +17,7 @@ return new class extends Migration
             $table->string('ticket_id')->unique()->nullable();
             $table->string('title');
             $table->string('img_url');
-            $table->foreignId('scan_category_id')->nullable()->constrained('m_scan_categories')->onDelete('set null');
-            $table->enum('status', ['PENDING', 'COMPLETED', 'FAILED'])->default('PENDING');            
+            $table->enum('status', ['PENDING', 'COMPLETED', 'FAILED'])->default('PENDING');
             $table->timestamps();
         });
     }

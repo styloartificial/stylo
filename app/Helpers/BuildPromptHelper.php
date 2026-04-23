@@ -10,59 +10,166 @@ use App\Models\Scan;
 
 class BuildPromptHelper {
     public static function run(Scan $scan) {
-        // Initial
-		$db = FirebaseService::database();
-		$ticketId = $scan->ticket_id;
-		
-		FirebaseLogHelper::logPromptBuild($db, $ticketId);
-		
-		$user = $scan->user;
-		$userProfileImg = S3Helper::downloadToTemp($user->userDetail->img_url);
-		$userDetail = $user->userDetail;
-		$userGender = $userDetail->gender;
-		$userHeight = $userDetail->height;
-		$userWeight = $userDetail->weight;
-		$userSkinTone = "{$userDetail->skinTone->title} ({$userDetail->skinTone->description})";
-		
-		$scanImg = S3Helper::downloadToTemp($scan->img_url);
-		$scanCategoryName = $scan->scanCategory->title;
-		
-		$prompt = "Berdasarkan foto orang ini, buatkan summary outfit $scanCategoryName untuk $userGender, tinggi $userHeight cm, berat $userWeight kg, skin tone $userSkinTone. Sertakan rekomendasi merk, hasil dalam JSON {summary, products}. Summary dalam bentuk teks utuh, bukan json ataupun array. Dapatkan juga 3 foto terpisah orang ini dengan rekomendasi merk tersebut dengan 3 pose dan di setiap foto jangan ubah wajah orangnya.";
-		
-		$promptBuild = [
-			'prompt' => $prompt,
-			'temp_images' => [$userProfileImg, $scanImg],
-			'generate_images' => 3
-		];
-		// Done Initial
-		
-		try {
-			FirebaseLogHelper::logPromptSent($db, $ticketId);
-			$result = OpenAIService::run($promptBuild);
-			FirebaseLogHelper::logPromptCompleted($db, $ticketId);
-			
-			$summaryUrls = [];
-			foreach($result['images'] as $tempImg) {
-				$s3Path = S3Helper::storeFileToS3(
-        			"scans/{$scan->ticket_id}/summary",
-					$tempImg
-				);
-				$summaryUrls[] = $s3Path;
-				S3Helper::removeFileTemp($tempImg);
-			}
-			
-			$scan->scanResult()->create([
-				'summary' => $result['analysis']['summary'] ?? null,
-				'img_urls' => $summaryUrls
-			]);
-			
-			return $result['analysis']['products'];
-		} catch (\Throwable $e) {
-			throw $e;
-		} finally {
-			S3Helper::removeFileTemp($userProfileImg);
-			S3Helper::removeFileTemp($scanImg);
-		}
-	
+
+        // =========================
+        // INITIAL
+        // =========================
+        $db = FirebaseService::database();
+        $ticketId = $scan->ticket_id;
+
+        FirebaseLogHelper::logPromptBuild($db, $ticketId);
+
+        $user = $scan->user;
+        $userDetail = $user->userDetail;
+
+        // =========================
+        // VALIDATION
+        // =========================
+        if (!$userDetail) {
+            throw new \Exception("User detail tidak ditemukan");
+        }
+
+        if (empty($scan->img_url)) {
+            throw new \Exception("Scan image wajib ada");
+        }
+
+        // =========================
+        // IMAGE DOWNLOAD (SAFE)
+        // =========================
+        $userProfileImg = !empty($userDetail->img_url)
+            ? S3Helper::downloadToTemp($userDetail->img_url)
+            : null;
+
+        $scanImg = S3Helper::downloadToTemp($scan->img_url);
+
+        $userGender = $userDetail->gender;
+        $userHeight = $userDetail->height;
+        $userWeight = $userDetail->weight;
+        $userSkinTone = "{$userDetail->skinTone->title} ({$userDetail->skinTone->description})";
+
+        // =========================
+        // CATEGORY PROCESSING
+        // =========================
+        $scanCategories = collect($scan->categories);
+
+        $scanCategoryItems = $scanCategories->where('type', 'item')->pluck('title')->implode(', ');
+        $scanCategoryOccasion = $scanCategories->where('type', 'occasion')->pluck('title')->implode(', ');
+        $scanCategoryStyle = $scanCategories->where('type', 'style')->pluck('title')->implode(', ');
+        $scanCategoryHijab = $userGender == "MALE"
+            ? null
+            : $scanCategories->where('type', 'hijab')->pluck('title')->implode(', ');
+
+        // =========================
+        // BUILD PROMPT
+        // =========================
+        $promptParts = [];
+
+        if (!empty($scanCategoryItems)) $promptParts[] = "item: $scanCategoryItems";
+        if (!empty($scanCategoryOccasion)) $promptParts[] = "occasion: $scanCategoryOccasion";
+        if (!empty($scanCategoryStyle)) $promptParts[] = "style: $scanCategoryStyle";
+        if (!empty($scanCategoryHijab)) $promptParts[] = "hijab: $scanCategoryHijab";
+
+        $promptCategoryText = implode(', ', $promptParts);
+
+        // 🔥 PROMPT DIPERKETAT (INI PENTING BANGET)
+        $prompt = "
+Berdasarkan foto orang ini, analisa outfit dan buatkan rekomendasi.
+
+Detail:
+- Gender: $userGender
+- Tinggi: $userHeight cm
+- Berat: $userWeight kg
+- Skin tone: $userSkinTone
+- Preferensi: $promptCategoryText
+
+WAJIB ikuti format JSON ini tanpa tambahan teks lain:
+
+{
+  \"summary\": \"string (penjelasan outfit lengkap dalam 1 paragraf)\",
+  \"products\": [
+    {
+      \"name\": \"string\",
+      \"brand\": \"string\",
+      \"category\": \"string\"
+    }
+  ]
+}
+
+Tambahkan juga 3 gambar dengan pose berbeda tanpa mengubah wajah.
+";
+
+        // =========================
+        // TEMP IMAGES
+        // =========================
+        $tempImages = array_values(array_filter([
+            $userProfileImg,
+            $scanImg
+        ]));
+
+        $promptBuild = [
+            'prompt' => $prompt,
+            'temp_images' => $tempImages,
+            'generate_images' => 3
+        ];
+
+        // =========================
+        // EXECUTE AI
+        // =========================
+        try {
+            FirebaseLogHelper::logPromptSent($db, $ticketId);
+
+            $result = OpenAIService::run($promptBuild);
+
+            FirebaseLogHelper::logPromptCompleted($db, $ticketId);
+
+            // =========================
+            // HANDLE AI RESPONSE (ANTI NULL)
+            // =========================
+            $analysis = $result['analysis'] ?? [];
+
+            $summary = $analysis['summary'] ?? null;
+            $products = $analysis['products'] ?? [];
+
+            // 🔥 fallback WAJIB (biar gak 500)
+            if (empty($summary)) {
+                $summary = "Tidak dapat menghasilkan summary outfit saat ini.";
+            }
+
+            // =========================
+            // SAVE IMAGES
+            // =========================
+            $summaryUrls = [];
+
+            if (!empty($result['images'])) {
+                foreach ($result['images'] as $tempImg) {
+                    $s3Path = S3Helper::storeFileToS3(
+                        "scans/{$scan->ticket_id}/summary",
+                        $tempImg
+                    );
+
+                    $summaryUrls[] = $s3Path;
+                    S3Helper::removeFileTemp($tempImg);
+                }
+            }
+
+            // =========================
+            // SAVE RESULT (ANTI ERROR DB)
+            // =========================
+            $scan->scanResult()->create([
+                'summary' => $summary,
+                'img_urls' => $summaryUrls
+            ]);
+
+            return $products;
+
+        } catch (\Throwable $e) {
+            throw $e;
+        } finally {
+            // =========================
+            // CLEANUP
+            // =========================
+            if ($userProfileImg) S3Helper::removeFileTemp($userProfileImg);
+            if ($scanImg) S3Helper::removeFileTemp($scanImg);
+        }
     }
 }

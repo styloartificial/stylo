@@ -16,15 +16,13 @@ use App\Http\Requests\LogScrapProcessRequest;
 use App\Http\Requests\CloseTicketRequest;
 use App\Http\Requests\ValidateImageByProfileGenderRequest;
 use App\Services\OpenAIService;
+use App\Models\ScanItemCategory;
 
 class ScanController extends BaseController
 {
     public function scanCategory(): JsonResponse
     {
-        $categories = MScanCategory::select('id', 'title', 'icon', 'type')
-            ->get()
-            ->groupBy('type');
-
+        $categories = MScanCategory::select('id', 'title', 'icon', 'type')->get();
         return $this->success($categories);
     }
 
@@ -86,14 +84,44 @@ class ScanController extends BaseController
             $imgUrl = S3Helper::getUrlFileS3("scans/{$ticketId}", $tempFileName);
 
             $dataScan = [
-                'user_id'          => $request->user()->id,
-                'ticket_id'        => $ticketId,
-                'title'            => $validated['title'],
-                'img_url'          => $imgUrl,
-                'scan_category_id' => $validated['scan_category_id'],
+                'user_id'   => $request->user()->id,
+                'ticket_id' => $ticketId,
+                'title'     => $validated['title'],
+                'img_url'   => $imgUrl,
             ];
 
+            $scan_items     = $validated['scan_category_id']['item']     ?? [];
+            $scan_occassions = $validated['scan_category_id']['occasion'] ?? [];
+            $scan_styles    = $validated['scan_category_id']['style']    ?? [];
+            $scan_hijab     = $validated['scan_category_id']['hijab']    ?? [];
+
             $scan = Scan::create($dataScan);
+
+            $scan_categories = [
+                ...array_map(fn($id) => [
+                    'scan_id'          => $scan->id,
+                    'item_category_id' => $id,
+                    'type'             => 'item'
+                ], $scan_items),
+                ...array_map(fn($id) => [
+                    'scan_id'          => $scan->id,
+                    'item_category_id' => $id,
+                    'type'             => 'occasion'
+                ], $scan_occassions),
+                ...array_map(fn($id) => [
+                    'scan_id'          => $scan->id,
+                    'item_category_id' => $id,
+                    'type'             => 'style'
+                ], $scan_styles),
+                ...array_map(fn($id) => [
+                    'scan_id'          => $scan->id,
+                    'item_category_id' => $id,
+                    'type'             => 'hijab'
+                ], $scan_hijab),
+            ];
+
+            ScanItemCategory::insert($scan_categories);
+
             FirebaseLogHelper::logTicketQueued($db, $ticketId);
 
             $products = BuildPromptHelper::run($scan);
@@ -111,10 +139,8 @@ class ScanController extends BaseController
                 ->values()
                 ->toArray();
 
-            // STEP 12: Log scrap queued
             FirebaseLogHelper::logScrapQueued($db, $ticketId);
 
-            // STEP 13: Push ke Firebase
             $db->getReference("ticket-request")->push([
                 'ticket_id'  => $ticketId,
                 'products'   => $productsFormatted,
@@ -122,7 +148,6 @@ class ScanController extends BaseController
                 'created_at' => now()->toDateTimeString(),
             ]);
 
-            // STEP 14: Return success
             return $this->success([
                 'ticket_id' => $ticketId
             ]);
@@ -160,16 +185,14 @@ class ScanController extends BaseController
     public function closeTicket(CloseTicketRequest $request): JsonResponse
     {
         try {
-
-            // STEP 1: Ambil data hasil validasi
             $validated = $request->validated();
-
             $ticketId  = $validated['ticket_id'];
 
-            // STEP 2: Ambil database Firebase
             $db = FirebaseService::database();
 
-            // STEP 3: Cek ticket di Firebase 
+            // =========================
+            // CEK TICKET (FIX PATH)
+            // =========================
             $ticketRef  = $db->getReference("tickets/{$ticketId}");
             $ticketData = $ticketRef->getValue();
 
@@ -181,37 +204,41 @@ class ScanController extends BaseController
                 ], 400);
             }
 
-            // STEP 4: Hapus data Redis berdasarkan ticket_id (scrap_queue)
-            // $queue = Redis::lrange('scrap_queue', 0, -1);
-            // Redis::del('scrap_queue');
+            // =========================
+            // CEK DB SCAN
+            // =========================
+            $scan = Scan::where('ticket_id', $ticketId)->first();
 
-            // foreach ($queue as $item) {
-            //     $decoded = json_decode($item, true);
+            if (!$scan) {
+                throw new \Exception("Scan tidak ditemukan di database");
+            }
 
-            //     if (
-            //         !isset($decoded['ticket_id']) ||
-            //         $decoded['ticket_id'] !== $ticketId
-            //     ) {
-            //         Redis::rpush('scrap_queue', $item);
-            //     }
-            // }
+            // =========================
+            // CEK STATUS
+            // =========================
+            if ($scan->status === 'COMPLETED') {
+                return $this->success("Ticket already completed");
+            }
 
-            // STEP 5: Update status scan di Firebase
+            // =========================
+            // UPDATE FIREBASE
+            // =========================
             $db->getReference("scans/{$ticketId}/status")
                 ->set('complete');
 
-            // STEP 6: Update status scan di database
-            $scan = Scan::where('ticket_id', $ticketId)->first();
-            if ($scan) {
-                $scan->status = 'COMPLETED';
-                $scan->save();
-            }
+            $db->getReference("tickets/{$ticketId}/status")
+                ->set('complete');
 
-            // STEP 7: Log generation completed ke Firebase
-            FirebaseLogHelper::logGenerationCompleted(
-                $db,
-                $ticketId
-            );
+            // =========================
+            // UPDATE DATABASE
+            // =========================
+            $scan->status = 'COMPLETED';
+            $scan->save();
+
+            // =========================
+            // LOG
+            // =========================
+            FirebaseLogHelper::logGenerationCompleted($db, $ticketId);
 
             return $this->success(null);
 

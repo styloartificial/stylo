@@ -11,8 +11,5 @@ class MScanCategory extends Model
         'icon',
     ];
 
-    public function scans()
-    {
-        return $this->hasMany(Scan::class, 'scan_category_id');
-    }
+    // public function scans() { }
 }

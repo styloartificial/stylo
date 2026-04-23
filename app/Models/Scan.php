@@ -11,7 +11,6 @@ class Scan extends Model
         'ticket_id',
         'title',
         'img_url',
-        'scan_category_id',
         'status',
     ];
 
@@ -19,10 +18,9 @@ class Scan extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
-
-    public function scanCategory()
+    public function scanItemCategories()
     {
-        return $this->belongsTo(MScanCategory::class, 'scan_category_id');
+        return $this->hasMany(ScanItemCategory::class, 'scan_id');
     }
 
     public function scanResult()

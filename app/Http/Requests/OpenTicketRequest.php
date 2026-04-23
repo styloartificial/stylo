@@ -23,9 +23,22 @@ class OpenTicketRequest extends BaseRequest
     public function rules(): array
     {
         return [
-            'img_url'          => ['required', 'image'],
-            'title'            => ['required', 'string'],
-            'scan_category_id' => ['required', 'exists:m_scan_categories,id'],
+            'img_url'                    => ['required', 'image'],
+            'title'                      => ['required', 'string'],
+
+            'scan_category_id'           => ['required', 'array'],
+
+            'scan_category_id.item'      => ['nullable', 'array'],
+            'scan_category_id.item.*'    => ['exists:m_scan_categories,id'],
+
+            'scan_category_id.occasion'  => ['nullable', 'array'],
+            'scan_category_id.occasion.*'=> ['exists:m_scan_categories,id'],
+
+            'scan_category_id.style'     => ['nullable', 'array'],
+            'scan_category_id.style.*'   => ['exists:m_scan_categories,id'],
+
+            'scan_category_id.hijab'     => ['nullable', 'array'],
+            'scan_category_id.hijab.*'   => ['exists:m_scan_categories,id'],
         ];
     }
 }
