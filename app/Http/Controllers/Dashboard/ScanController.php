@@ -44,7 +44,7 @@ class ScanController extends BaseController
 
             $tempFileName = S3Helper::storeFileTemp($file);
 
-            $prompt = "Look at this image carefully. Is there a person in this image whose gender appears to be $gender? Be lenient - if the person could reasonably be $gender, answer true. Answer with only the word true or false, nothing else.";
+            $prompt = "Look at this image carefully. Is the person in this image $gender? Answer with only the word true or false, nothing else. No explanation.";
 
             $payload = [
                 'prompt' => $prompt,
