@@ -29,7 +29,6 @@ class ScanController extends BaseController
     public function validateImageByProfileGender(ValidateImageByProfileGenderRequest $request): JsonResponse
     {
         try {
-            
             $user = $request->user();
             $gender = strtolower($user->userDetail->gender);
 
@@ -45,22 +44,24 @@ class ScanController extends BaseController
 
             $tempFileName = S3Helper::storeFileTemp($file);
 
-            // sesudah
             $prompt = "Look at this image carefully. Is there a person in this image whose gender appears to be $gender? Be lenient - if the person could reasonably be $gender, answer true. Answer with only the word true or false, nothing else.";
 
             $payload = [
                 'prompt' => $prompt,
                 'temp_images' => [$tempFileName],
-                'generate_images' => 0
+                'generate_images' => 0,
+                'plain_text' => true,
             ];
 
             $result = OpenAIService::run($payload);
-            $rawResult = strtolower(trim($result['analysis']['result'] ?? ''));
-            $isValid = str_contains($rawResult, 'true');
 
-            S3Helper::removeFileTemp($tempFileName);
+            // TEMPORARY DEBUG - hapus setelah selesai
+            return $this->success([
+                'debug_result' => $result,
+                'debug_raw' => $result['analysis']['_raw'] ?? 'KOSONG',
+                'debug_analysis' => $result['analysis'] ?? 'KOSONG',
+            ]);
 
-            return $this->success($isValid);
         } catch (\Throwable $e) {
             if (isset($tempFileName)) {
                 S3Helper::removeFileTemp($tempFileName);

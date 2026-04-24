@@ -18,27 +18,28 @@ class OpenAIService
         $prompt = $payload['prompt'] ?? '';
         $tempImages = $payload['temp_images'] ?? [];
         $generateImages = (int) ($payload['generate_images'] ?? 0);
+        $plainText = (bool) ($payload['plain_text'] ?? false);
 
         if (!$prompt) {
             throw new \InvalidArgumentException('Prompt is required');
         }
 
         return [
-            'analysis' => self::analyze($prompt, $tempImages),
+            'analysis' => self::analyze($prompt, $tempImages, $plainText),
             'images' => $generateImages > 0
                 ? self::generateImages($prompt, $generateImages)
                 : [],
         ];
     }
 
-    protected static function analyze(string $prompt, array $tempImages): array
+    protected static function analyze(string $prompt, array $tempImages, bool $plainText = false): array
     {
         $client = self::client();
 
         $content = [
             [
                 'type' => 'text',
-                'text' => $prompt . "\n\nReturn JSON only.",
+                'text' => $plainText ? $prompt : $prompt . "\n\nReturn JSON only.",
             ]
         ];
 
@@ -53,13 +54,14 @@ class OpenAIService
             $content[] = [
                 'type' => 'image_url',
                 'image_url' => [
-                    'url' => self::tempFileToBase64($fullPath), // kirim full path
+                    'url' => self::tempFileToBase64($fullPath),
                 ],
             ];
         }
 
         $response = $client->chat()->create([
             'model' => 'gpt-4o-mini',
+            'temperature' => $plainText ? 0 : 0.7,
             'messages' => [
                 [
                     'role' => 'user',
@@ -68,9 +70,13 @@ class OpenAIService
             ],
         ]);
 
-        return self::safeJsonDecode(
-            $response->choices[0]->message->content ?? '{}'
-        );
+        $rawContent = $response->choices[0]->message->content ?? '';
+
+        if ($plainText) {
+            return ['_raw' => $rawContent];
+        }
+
+        return self::safeJsonDecode($rawContent);
     }
 
     protected static function generateImages(string $prompt, int $count): array
@@ -100,9 +106,19 @@ class OpenAIService
 
     protected static function tempFileToBase64(string $fullPath): string
     {
-        $mime = mime_content_type($fullPath);
-        $data = base64_encode(file_get_contents($fullPath));
+        $mime = @mime_content_type($fullPath) ?: 'image/jpeg';
 
+        if ($mime === 'image/webp') {
+            $image = imagecreatefromwebp($fullPath);
+            ob_start();
+            imagejpeg($image, null, 90);
+            $data = ob_get_clean();
+            imagedestroy($image);
+            $mime = 'image/jpeg';
+            return "data:{$mime};base64," . base64_encode($data);
+        }
+
+        $data = base64_encode(file_get_contents($fullPath));
         return "data:{$mime};base64,{$data}";
     }
 
