@@ -55,12 +55,12 @@ class ScanController extends BaseController
 
             $result = OpenAIService::run($payload);
 
-            // TEMPORARY DEBUG - hapus setelah selesai
-            return $this->success([
-                'debug_result' => $result,
-                'debug_raw' => $result['analysis']['_raw'] ?? 'KOSONG',
-                'debug_analysis' => $result['analysis'] ?? 'KOSONG',
-            ]);
+            $rawResult = strtolower(trim($result['analysis']['_raw'] ?? ''));
+            $isValid = str_contains($rawResult, 'true');
+
+            S3Helper::removeFileTemp($tempFileName);
+
+            return $this->success($isValid);
 
         } catch (\Throwable $e) {
             if (isset($tempFileName)) {
