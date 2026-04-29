@@ -24,7 +24,8 @@ class OpenTicketRequest extends BaseRequest
     {
         return [
             'img_url'                    => ['required', 'image'],
-            'title'                      => ['required', 'string'],
+            'title'                      => ['nullable', 'string'],
+            'outfit_detail'               => ['nullable', 'string'],
 
             'scan_category_id'           => ['required', 'array'],
 

@@ -88,6 +88,7 @@ class ScanController extends BaseController
                 'user_id'   => $request->user()->id,
                 'ticket_id' => $ticketId,
                 'title'     => $validated['title'],
+                'outfit_detail' => $validated['outfit_detail'] ?? null,
                 'img_url'   => $imgUrl,
             ];
 

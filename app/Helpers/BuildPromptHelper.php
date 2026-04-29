@@ -72,32 +72,34 @@ class BuildPromptHelper {
         $promptCategoryText = implode(', ', $promptParts);
 
         // 🔥 PROMPT DIPERKETAT (INI PENTING BANGET)
+        $outfitDetail = $scan->outfit_detail ?? null;
+
+        // di bagian BUILD PROMPT, tambah setelah $promptCategoryText
         $prompt = "
-Berdasarkan foto orang ini, analisa outfit dan buatkan rekomendasi.
+        Berdasarkan foto orang ini, analisa outfit dan buatkan rekomendasi.
 
-Detail:
-- Gender: $userGender
-- Tinggi: $userHeight cm
-- Berat: $userWeight kg
-- Skin tone: $userSkinTone
-- Preferensi: $promptCategoryText
+        Detail:
+        - Gender: $userGender
+        - Tinggi: $userHeight cm
+        - Berat: $userWeight kg
+        - Skin tone: $userSkinTone
+        - Preferensi: $promptCategoryText
+        " . ($outfitDetail ? "- Detail tambahan dari user: $outfitDetail\n" : "") . "
+        WAJIB ikuti format JSON ini tanpa tambahan teks lain:
 
-WAJIB ikuti format JSON ini tanpa tambahan teks lain:
+        {
+        \"summary\": \"string (penjelasan outfit lengkap dalam 1 paragraf)\",
+        \"products\": [
+            {
+            \"name\": \"string\",
+            \"brand\": \"string\",
+            \"category\": \"string\"
+            }
+        ]
+        }
 
-{
-  \"summary\": \"string (penjelasan outfit lengkap dalam 1 paragraf)\",
-  \"products\": [
-    {
-      \"name\": \"string\",
-      \"brand\": \"string\",
-      \"category\": \"string\"
-    }
-  ]
-}
-
-Tambahkan juga 3 gambar dengan pose berbeda tanpa mengubah wajah.
-";
-
+        Tambahkan juga 3 gambar dengan pose berbeda tanpa mengubah wajah.
+        ";
         // =========================
         // TEMP IMAGES
         // =========================
