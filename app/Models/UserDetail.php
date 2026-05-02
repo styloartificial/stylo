@@ -13,6 +13,7 @@ class UserDetail extends Model
         'height',
         'weight',
         'skin_tone_id',
+        'body_shape_id',
         'img_url'
     ];
 
@@ -23,5 +24,9 @@ class UserDetail extends Model
     public function skinTone()
     {
         return $this->belongsTo(MSkinTone::class, 'skin_tone_id');
+    }
+    public function bodyShape()
+    {
+        return $this->belongsTo(MBodyShape::class, 'body_shape_id');
     }
 }

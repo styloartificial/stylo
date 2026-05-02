@@ -16,6 +16,7 @@ Route::middleware('guest')->group(function () {
             Route::post('/', [RegisterController::class, 'Register']);
             Route::post('/check-email', [RegisterController::class, 'CheckEmail']);
             Route::get('/skin-tone', [RegisterController::class, 'GetSkinTone']);
+            Route::get('/body-shape', [RegisterController::class, 'GetBodyShape']); // ✅ tambah
         });
 
         Route::prefix('/login')->group(function () {
@@ -41,22 +42,17 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/scan-categories', [ScanController::class, 'scanCategory']);
         });
 
-        Route::post(
-            '/validate-image-by-profile-gender',
-            [ScanController::class, 'validateImageByProfileGender']
-        );
-
-
+        Route::post('/validate-image-by-profile-gender', [ScanController::class, 'validateImageByProfileGender']);
         Route::post('/open-ticket', [ScanController::class, 'openTicket']);
     });
 
     Route::post('/log-scrap-process', [ScanController::class, 'logScrapProcess']);
     Route::post('/close-ticket', [ScanController::class, 'closeTicket']);
-
     // Route::get('/profile', [ProfileController::class, 'index']);
     Route::prefix('profile')->group(function () {
         Route::get('/', [ProfileController::class, 'index']);
         Route::get('/skin-tone', [ProfileController::class, 'getSkinTone']);
+        Route::get('/body-shape', [ProfileController::class, 'getBodyShape']); 
         Route::patch('/', [ProfileController::class, 'update']);
         Route::post('/change-password', [ProfileController::class, 'changePassword']);
         Route::post('/change-img-url', [ProfileController::class, 'changeImgUrl']);
@@ -65,5 +61,5 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::prefix('scraper')->middleware(['auth:sanctum', 'role:Scraper'])->group(function () {
     Route::get('get-oldest-ticket-request', [ScraperController::class, 'getOldestTicketRequest']);
-    Route::post('set-done-ticket-request',  [ScraperController::class, 'setDoneTicketRequest']);
+    Route::post('set-done-ticket-request', [ScraperController::class, 'setDoneTicketRequest']);
 });

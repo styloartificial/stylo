@@ -5,12 +5,14 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\BaseController;
 use App\Http\Requests\Auth\CheckEmailRequest;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Models\MBodyShape;
 use App\Models\MSkinTone;
 use App\Models\User;
 
 class RegisterController extends BaseController
 {
-    public function CheckEmail(CheckEmailRequest $request) {
+    public function CheckEmail(CheckEmailRequest $request)
+    {
         try {
             $data = $request->validated();
             return $this->success();
@@ -19,7 +21,8 @@ class RegisterController extends BaseController
         }
     }
 
-    public function GetSkinTone() {
+    public function GetSkinTone()
+    {
         try {
             $data = MSkinTone::all();
             return $this->success($data);
@@ -28,25 +31,37 @@ class RegisterController extends BaseController
         }
     }
 
-    public function Register(RegisterRequest $request) {
+    public function GetBodyShape()
+    {
+        try {
+            $data = MBodyShape::all();
+            return $this->success($data);
+        } catch (\Throwable $th) {
+            return $this->serverError($th);
+        }
+    }
+
+    public function Register(RegisterRequest $request)
+    {
         try {
             $data = $request->validated();
             $data['password'] = bcrypt($data['password']);
-            
+
             $newUser = User::create($data)->assignRole('user');
             $newUser->userDetail()->create([
-                'gender' => $data['gender'],
+                'gender'        => $data['gender'],
                 'date_of_birth' => $data['date_of_birth'],
-                'height' => $data['height'],
-                'weight' => $data['weight'],
-                'skin_tone_id' => $data['skin_tone_id'],
+                'height'        => $data['height'],
+                'weight'        => $data['weight'],
+                'skin_tone_id'  => $data['skin_tone_id'],
+                'body_shape_id' => $data['body_shape_id'] ?? null,
             ]);
             $newUser->load('userDetail');
             $token = $newUser->createToken('StyloartificialToken')->plainTextToken;
 
             return $this->success([
                 'token' => $token,
-                'user' => $newUser
+                'user'  => $newUser
             ]);
         } catch (\Throwable $th) {
             return $this->serverError($th);

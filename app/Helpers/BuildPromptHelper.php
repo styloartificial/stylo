@@ -42,20 +42,27 @@ class BuildPromptHelper {
 
         $scanImg = S3Helper::downloadToTemp($scan->img_url);
 
-        $userGender = $userDetail->gender;
-        $userHeight = $userDetail->height;
-        $userWeight = $userDetail->weight;
-        $userSkinTone = "{$userDetail->skinTone->title} ({$userDetail->skinTone->description})";
+        $userGender    = $userDetail->gender;
+        $userHeight    = $userDetail->height;
+        $userWeight    = $userDetail->weight;
+        $userSkinTone  = $userDetail->skinTone
+            ? "{$userDetail->skinTone->title} ({$userDetail->skinTone->description})"
+            : "tidak diketahui";
+
+        // ✅ tambah body shape
+        $userBodyShape = $userDetail->bodyShape
+            ? "{$userDetail->bodyShape->title} ({$userDetail->bodyShape->description})"
+            : "tidak diketahui";
 
         // =========================
         // CATEGORY PROCESSING
         // =========================
         $scanCategories = collect($scan->categories);
 
-        $scanCategoryItems = $scanCategories->where('type', 'item')->pluck('title')->implode(', ');
+        $scanCategoryItems   = $scanCategories->where('type', 'item')->pluck('title')->implode(', ');
         $scanCategoryOccasion = $scanCategories->where('type', 'occasion')->pluck('title')->implode(', ');
-        $scanCategoryStyle = $scanCategories->where('type', 'style')->pluck('title')->implode(', ');
-        $scanCategoryHijab = $userGender == "MALE"
+        $scanCategoryStyle   = $scanCategories->where('type', 'style')->pluck('title')->implode(', ');
+        $scanCategoryHijab   = $userGender == "MALE"
             ? null
             : $scanCategories->where('type', 'hijab')->pluck('title')->implode(', ');
 
@@ -64,17 +71,16 @@ class BuildPromptHelper {
         // =========================
         $promptParts = [];
 
-        if (!empty($scanCategoryItems)) $promptParts[] = "item: $scanCategoryItems";
+        if (!empty($scanCategoryItems))   $promptParts[] = "item: $scanCategoryItems";
         if (!empty($scanCategoryOccasion)) $promptParts[] = "occasion: $scanCategoryOccasion";
-        if (!empty($scanCategoryStyle)) $promptParts[] = "style: $scanCategoryStyle";
-        if (!empty($scanCategoryHijab)) $promptParts[] = "hijab: $scanCategoryHijab";
+        if (!empty($scanCategoryStyle))   $promptParts[] = "style: $scanCategoryStyle";
+        if (!empty($scanCategoryHijab))   $promptParts[] = "hijab: $scanCategoryHijab";
 
         $promptCategoryText = implode(', ', $promptParts);
 
-        // 🔥 PROMPT DIPERKETAT (INI PENTING BANGET)
         $outfitDetail = $scan->outfit_detail ?? null;
 
-        // di bagian BUILD PROMPT, tambah setelah $promptCategoryText
+        // ✅ tambah body shape ke prompt
         $prompt = "
         Berdasarkan foto orang ini, analisa outfit dan buatkan rekomendasi.
 
@@ -83,6 +89,7 @@ class BuildPromptHelper {
         - Tinggi: $userHeight cm
         - Berat: $userWeight kg
         - Skin tone: $userSkinTone
+        - Body shape: $userBodyShape
         - Preferensi: $promptCategoryText
         " . ($outfitDetail ? "- Detail tambahan dari user: $outfitDetail\n" : "") . "
         WAJIB ikuti format JSON ini tanpa tambahan teks lain:
@@ -100,6 +107,7 @@ class BuildPromptHelper {
 
         Tambahkan juga 3 gambar dengan pose berbeda tanpa mengubah wajah.
         ";
+
         // =========================
         // TEMP IMAGES
         // =========================
@@ -125,14 +133,12 @@ class BuildPromptHelper {
             FirebaseLogHelper::logPromptCompleted($db, $ticketId);
 
             // =========================
-            // HANDLE AI RESPONSE (ANTI NULL)
+            // HANDLE AI RESPONSE
             // =========================
             $analysis = $result['analysis'] ?? [];
-
-            $summary = $analysis['summary'] ?? null;
+            $summary  = $analysis['summary'] ?? null;
             $products = $analysis['products'] ?? [];
 
-            // 🔥 fallback WAJIB (biar gak 500)
             if (empty($summary)) {
                 $summary = "Tidak dapat menghasilkan summary outfit saat ini.";
             }
@@ -148,17 +154,16 @@ class BuildPromptHelper {
                         "scans/{$scan->ticket_id}/summary",
                         $tempImg
                     );
-
                     $summaryUrls[] = $s3Path;
                     S3Helper::removeFileTemp($tempImg);
                 }
             }
 
             // =========================
-            // SAVE RESULT (ANTI ERROR DB)
+            // SAVE RESULT
             // =========================
             $scan->scanResult()->create([
-                'summary' => $summary,
+                'summary'  => $summary,
                 'img_urls' => $summaryUrls
             ]);
 

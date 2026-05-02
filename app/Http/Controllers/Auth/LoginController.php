@@ -19,14 +19,13 @@ class LoginController extends BaseController
             $user = User::where('email', $data['email'])->first();
 
             if (!$user || !Hash::check($data['password'], $user->password)) {
-                return $this->clientError(
-                    'Email atau password salah.'
-                );
+                return $this->clientError('Email atau password salah.');
             }
 
             $token = $user->createToken('StyloartificialToken')->plainTextToken;
 
-            $user->load('userDetail', 'userDetail.skinTone');
+            // ✅ tambah bodyShape
+            $user->load('userDetail', 'userDetail.skinTone', 'userDetail.bodyShape');
 
             return $this->success([
                 'token' => $token,
@@ -54,7 +53,7 @@ class LoginController extends BaseController
 
             $token = $user->createToken('StyloartificialToken')->plainTextToken;
 
-            $user->load('userDetail', 'userDetail.skinTone');
+            $user->load('userDetail', 'userDetail.skinTone', 'userDetail.bodyShape');
 
             return $this->success([
                 'token' => $token,
@@ -96,17 +95,19 @@ class LoginController extends BaseController
                 ])->assignRole('user');
 
                 $user->userDetail()->create([
-                    'gender' => $gender,
+                    'gender'        => $gender,
                     'date_of_birth' => null,
-                    'height' => null,
-                    'weight' => null,
-                    'skin_tone_id' => null,
+                    'height'        => null,
+                    'weight'        => null,
+                    'skin_tone_id'  => null,
+                    'body_shape_id' => null, 
                 ]);
             } else {
                 $user = $checkUserExists;
             }
 
-            $user->load('userDetail', 'userDetail.skinTone');
+            
+            $user->load('userDetail', 'userDetail.skinTone', 'userDetail.bodyShape');
             $token = $user->createToken('StyloartificialToken')->plainTextToken;
 
             return $this->success([

@@ -6,7 +6,7 @@ use App\Http\Requests\BaseRequest;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RegisterRequest extends BaseRequest
-{
+{   
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -14,7 +14,7 @@ class RegisterRequest extends BaseRequest
     {
         return true;
     }
-
+    
     /**
      * Get the validation rules that apply to the request.
      *
@@ -23,14 +23,15 @@ class RegisterRequest extends BaseRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string'],
-            'email' => ['required', 'string', 'email', 'unique:users,email'],
-            'password' => ['required', 'string', 'confirmed'],
-            'gender' => ['required', 'in:MALE,FEMALE'],
+            'name'          => ['required', 'string'],
+            'email'         => ['required', 'string', 'email', 'unique:users,email'],
+            'password'      => ['required', 'string', 'confirmed'],
+            'gender'        => ['required', 'in:MALE,FEMALE'],
             'date_of_birth' => ['required', 'date'],
-            'height' => ['required', 'numeric'],
-            'weight' => ['required', 'numeric'],
-            'skin_tone_id' => ['required', 'exists:m_skin_tones,id']
+            'height'        => ['required', 'numeric'],
+            'weight'        => ['required', 'numeric'],
+            'skin_tone_id'  => ['required', 'exists:m_skin_tones,id'],
+            'body_shape_id' => ['required', 'exists:m_body_shapes,id'],
         ];
     }
 }
