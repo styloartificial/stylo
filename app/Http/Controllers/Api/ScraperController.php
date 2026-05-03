@@ -6,6 +6,7 @@ use App\Http\Controllers\BaseController;
 use App\Services\FirebaseService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use App\Helpers\FirebaseLogHelper;
 
 class ScraperController extends BaseController
 {
@@ -58,11 +59,11 @@ class ScraperController extends BaseController
         try {
             $request->validate([
                 'ticket_request_id' => 'required|string',
-                'storedData'        => 'required|array', 
+                'storedData'        => 'required|array',
             ]);
 
             $id         = $request->input('ticket_request_id');
-            $storedData = $request->input('storedData'); 
+            $storedData = $request->input('storedData');
 
             $db  = FirebaseService::database();
             $ref = $db->getReference("ticket-request/{$id}");
@@ -79,6 +80,16 @@ class ScraperController extends BaseController
 
             $ref->update(['data' => $storedData]);
             $ref->update(['status' => 'success']);
+
+            // Ambil ticket_id dari data Firebase
+            $ticketData = $snapshot->getValue();
+            $ticketId = $ticketData['ticket_id'] ?? null;
+
+            // Tulis log 7 dan 8 ke Firebase
+            if ($ticketId) {
+                FirebaseLogHelper::logScrapProcess($db, $ticketId);
+                FirebaseLogHelper::logGenerationCompleted($db, $ticketId);
+            }
 
             return $this->success(null);
 
