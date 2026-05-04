@@ -62,15 +62,18 @@ class ScraperController extends BaseController
                 'storedData'        => 'required|array',
             ]);
 
-            $id         = $request->input('ticket_request_id');
+            $ticketId  = $request->input('ticket_request_id');
             $storedData = $request->input('storedData');
 
-            $db  = FirebaseService::database();
-            $ref = $db->getReference("ticket-request/{$id}");
+            $db = FirebaseService::database();
 
-            $snapshot = $ref->getSnapshot();
+            // 🔍 Cari data berdasarkan ticket_id
+            $query = $db->getReference('ticket-request')
+                ->orderByChild('ticket_id')
+                ->equalTo($ticketId)
+                ->getSnapshot();
 
-            if (!$snapshot->exists()) {
+            if (!$query->exists()) {
                 return response()->json([
                     'code'    => 400,
                     'message' => 'Ticket request not found.',
@@ -78,23 +81,53 @@ class ScraperController extends BaseController
                 ], 400);
             }
 
-            $ref->update(['data' => $storedData]);
-            $ref->update(['status' => 'success']);
+            // 📌 Ambil hasil query
+            $result = $query->getValue();
 
-            // Ambil ticket_id dari data Firebase
-            $ticketData = $snapshot->getValue();
-            $ticketId = $ticketData['ticket_id'] ?? null;
+            // Ambil push key pertama
+            $key = array_key_first($result);
 
-            // Tulis log 7 dan 8 ke Firebase
-            if ($ticketId) {
-                FirebaseLogHelper::logScrapProcess($db, $ticketId);
-                FirebaseLogHelper::logGenerationCompleted($db, $ticketId);
+            if (!$key) {
+                return response()->json([
+                    'code'    => 400,
+                    'message' => 'Invalid ticket data.',
+                    'data'    => null,
+                ], 400);
             }
 
-            return $this->success(null);
+            // 🔗 Reference ke node spesifik
+            $ref = $db->getReference("ticket-request/{$key}");
+
+            // 📝 Update data
+            $ref->update([
+                'data'   => $storedData,
+                'status' => 'success',
+            ]);
+
+            // 🔁 Ambil ulang data terbaru (optional tapi aman)
+            $updatedSnapshot = $ref->getSnapshot();
+            $ticketData = $updatedSnapshot->getValue();
+
+            $ticketIdFromDb = $ticketData['ticket_id'] ?? null;
+
+            // 📊 Logging ke Firebase
+            if ($ticketIdFromDb) {
+                FirebaseLogHelper::logScrapProcess($db, $ticketIdFromDb);
+                FirebaseLogHelper::logGenerationCompleted($db, $ticketIdFromDb);
+            }
+
+            return response()->json([
+                'code'    => 200,
+                'message' => 'Success',
+                'data'    => null,
+            ], 200);
 
         } catch (\Throwable $th) {
-            return $this->serverError($th);
+            return response()->json([
+                'code'    => 500,
+                'message' => $th->getMessage(),
+                'data'    => null,
+            ], 500);
         }
     }
 }
