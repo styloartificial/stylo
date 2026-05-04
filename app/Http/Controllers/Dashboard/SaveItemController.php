@@ -6,7 +6,6 @@ use App\Http\Controllers\BaseController;
 use App\Http\Requests\StoreSaveItemRequest;
 use App\Models\Scan;
 use App\Models\ScanSave;
-use App\Models\SaveItem;
 use App\Services\FirebaseService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -44,26 +43,12 @@ class SaveItemController extends BaseController
                 return $this->clientError('Scan tidak ditemukan.');
             }
 
-            // STEP 3 — Simpan ke scan_saves & save_items
-            $scanSave = ScanSave::create([
+            // STEP 3 — Simpan ke scan_saves saja
+            ScanSave::create([
                 'scan_id'    => $scan->id,
                 'img_url'    => $validated['items'][0]['img_url'] ?? null,
                 'is_partial' => $validated['is_partial'],
             ]);
-
-            $saveItems = collect($validated['items'])->map(fn($item) => [
-                'scan_save_id'   => $scanSave->id,
-                'product_name'   => $item['product_name'],
-                'img_url'        => $item['img_url'],
-                'rating'         => $item['rating'],
-                'count_purchase' => $item['count_purchase'],
-                'price'          => $item['price'],
-                'product_url'    => $item['product_url'],
-                'created_at'     => now(),
-                'updated_at'     => now(),
-            ])->toArray();
-
-            SaveItem::insert($saveItems);
 
             return $this->success(null);
 
@@ -89,8 +74,7 @@ class SaveItemController extends BaseController
                     $q->where('is_partial', $isPartial);
                 })
                 ->with(['scanSaves' => function ($q) use ($isPartial) {
-                    $q->where('is_partial', $isPartial)
-                      ->with('saveItems');
+                    $q->where('is_partial', $isPartial);
                 }])
                 ->orderByDesc('id')
                 ->paginate(10);

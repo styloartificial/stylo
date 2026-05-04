@@ -20,9 +20,4 @@ class ScanSave extends Model
     {
         return $this->belongsTo(Scan::class, 'scan_id');
     }
-
-    public function saveItems()
-    {
-        return $this->hasMany(SaveItem::class, 'scan_save_id');
-    }
 }
