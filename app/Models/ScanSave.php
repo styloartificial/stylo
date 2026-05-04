@@ -10,10 +10,18 @@ class ScanSave extends Model
         'scan_id',
         'img_url',
         'is_partial',
+        'product_name',
+        'price',
+        'rating',
+        'count_purchase',
+        'product_url',
     ];
 
     protected $casts = [
         'is_partial' => 'boolean',
+        'price' => 'float',
+        'rating' => 'float',
+        'count_purchase' => 'integer',
     ];
 
     public function scan()

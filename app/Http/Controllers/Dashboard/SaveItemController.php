@@ -43,12 +43,19 @@ class SaveItemController extends BaseController
                 return $this->clientError('Scan tidak ditemukan.');
             }
 
-            // STEP 3 — Simpan ke scan_saves saja
-            ScanSave::create([
-                'scan_id'    => $scan->id,
-                'img_url'    => $validated['items'][0]['img_url'] ?? null,
-                'is_partial' => $validated['is_partial'],
-            ]);
+            // STEP 3 — Simpan ke scan_saves per item
+            foreach ($validated['items'] as $item) {
+                ScanSave::create([
+                    'scan_id'        => $scan->id,
+                    'img_url'        => $item['img_url'],
+                    'is_partial'     => $validated['is_partial'],
+                    'product_name'   => $item['product_name'],
+                    'price'          => $item['price'] ?? null,
+                    'rating'         => $item['rating'] ?? null,
+                    'count_purchase' => $item['count_purchase'] ?? null,
+                    'product_url'    => $item['product_url'],
+                ]);
+            }
 
             return $this->success(null);
 

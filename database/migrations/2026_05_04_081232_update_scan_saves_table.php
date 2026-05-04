@@ -9,23 +9,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('scan_saves', function (Blueprint $table) {
-            $table->dropColumn(['type', 'img_urls', 'product_name', 'rating', 'count_purchase', 'price', 'product_url']);
-            $table->string('img_url')->nullable()->after('scan_id');
-            $table->boolean('is_partial')->default(0)->after('img_url');
+            $table->string('product_name')->nullable()->after('img_url');
+            $table->float('price')->nullable()->after('product_name');
+            $table->float('rating')->nullable()->after('price');
+            $table->integer('count_purchase')->nullable()->after('rating');
+            $table->string('product_url')->nullable()->after('count_purchase');
         });
     }
 
     public function down(): void
     {
         Schema::table('scan_saves', function (Blueprint $table) {
-            $table->dropColumn(['img_url', 'is_partial']);
-            $table->enum('type', ['FULL', 'PARTIAL'])->default('FULL');
-            $table->json('img_urls')->nullable();
-            $table->string('product_name')->nullable();
-            $table->float('rating')->nullable();
-            $table->integer('count_purchase')->nullable();
-            $table->float('price')->nullable();
-            $table->string('product_url')->nullable();
+            $table->dropColumn(['product_name', 'price', 'rating', 'count_purchase', 'product_url']);
         });
     }
 };

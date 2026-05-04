@@ -17,9 +17,9 @@ class StoreSaveItemRequest extends BaseRequest
             'items'                  => ['required', 'array'],
             'items.*.product_name'   => ['required', 'string'],
             'items.*.img_url'        => ['required', 'url'],
-            'items.*.rating'         => ['required', 'numeric'],
-            'items.*.count_purchase' => ['required', 'numeric'],
-            'items.*.price'          => ['required', 'numeric'],
+            'items.*.rating'         => ['nullable', 'numeric'],
+            'items.*.count_purchase' => ['nullable', 'numeric'],
+            'items.*.price'          => ['nullable', 'numeric'],
             'items.*.product_url'    => ['required', 'url'],
         ];
     }
