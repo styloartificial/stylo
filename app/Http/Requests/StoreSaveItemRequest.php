@@ -16,7 +16,7 @@ class StoreSaveItemRequest extends BaseRequest
             'is_partial'             => ['required', 'boolean'],
             'items'                  => ['required', 'array'],
             'items.*.product_name'   => ['required', 'string'],
-            'items.*.img_url'        => ['required', 'image'],
+            'items.*.img_url'        => ['required', 'url'],
             'items.*.rating'         => ['required', 'numeric'],
             'items.*.count_purchase' => ['required', 'numeric'],
             'items.*.price'          => ['required', 'numeric'],
