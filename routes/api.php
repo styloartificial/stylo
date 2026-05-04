@@ -44,6 +44,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::post('/validate-image-by-profile-gender', [ScanController::class, 'validateImageByProfileGender']);
         Route::post('/open-ticket', [ScanController::class, 'openTicket']);
+        Route::get('/scan-result/{ticketId}', [ScanController::class, 'getScanResult']);
     });
 
     Route::post('/log-scrap-process', [ScanController::class, 'logScrapProcess']);

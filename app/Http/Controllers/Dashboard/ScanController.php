@@ -248,4 +248,40 @@ class ScanController extends BaseController
             return $this->serverError($th);
         }
     }
+
+    public function getScanResult(string $ticketId): JsonResponse
+    {
+        try {
+            $scan = Scan::with('scanResult')
+                ->where('ticket_id', $ticketId)
+                ->firstOrFail();
+
+            $scanResult = $scan->scanResult;
+
+            if (!$scanResult) {
+                return response()->json([
+                    'code' => 404,
+                    'message' => 'Scan result not found.',
+                    'data' => null
+                ], 404);
+            }
+
+            // Convert img_urls dari Supabase path ke full URL
+            $imgUrls = collect($scanResult->img_urls)->map(function ($path) {
+                return config('services.supabase.url') .
+                    '/storage/v1/object/public/' .
+                    config('services.supabase.bucket') . '/' . $path;
+            })->values()->toArray();
+
+            return $this->success([
+                'ticket_id' => $scan->ticket_id,
+                'title'     => $scan->title,
+                'summary'   => $scanResult->summary,
+                'img_urls'  => $imgUrls,
+            ]);
+
+        } catch (\Throwable $th) {
+            return $this->serverError($th);
+        }
+    }
 }

@@ -119,7 +119,7 @@ class BuildPromptHelper {
         $promptBuild = [
             'prompt' => $prompt,
             'temp_images' => $tempImages,
-            'generate_images' => 3
+            'generate_images' => 1
         ];
 
         // =========================
