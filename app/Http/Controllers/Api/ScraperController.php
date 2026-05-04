@@ -39,11 +39,7 @@ class ScraperController extends BaseController
             }
 
             if ($oldest === null) {
-                return response()->json([
-                    'code'    => 400,
-                    'message' => 'No pending ticket requests.',
-                    'data'    => null,
-                ], 400);
+                return $this->success(null);
             }
 
             return $this->success($oldest);
