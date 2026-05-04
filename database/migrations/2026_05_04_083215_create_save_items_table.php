@@ -11,24 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('scan_save_parts', function (Blueprint $table) {
+        Schema::create('save_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('scan_save_id')->constrained('scan_saves')->onDelete('cascade');
-            $table->json('img_urls');
+            $table->foreignId('scan_save_id')->constrained('scan_saves')->cascadeOnDelete();
             $table->string('product_name');
-            $table->float('rating');
-            $table->integer('count_purchase');
-            $table->float('price');
+            $table->string('img_url');
+            $table->decimal('rating', 3, 1)->default(0);
+            $table->decimal('count_purchase', 15, 0)->default(0);
+            $table->decimal('price', 15, 0)->default(0);
             $table->string('product_url');
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('scan_save_parts');
+        Schema::dropIfExists('save_items');
     }
 };

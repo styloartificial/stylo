@@ -8,13 +8,12 @@ class ScanSave extends Model
 {
     protected $fillable = [
         'scan_id',
-        'type',
-        'img_urls',
-        'product_name',
-        'rating',
-        'count_purchase',
-        'price',
-        'product_url',
+        'img_url',
+        'is_partial',
+    ];
+
+    protected $casts = [
+        'is_partial' => 'boolean',
     ];
 
     public function scan()
@@ -22,8 +21,8 @@ class ScanSave extends Model
         return $this->belongsTo(Scan::class, 'scan_id');
     }
 
-    public function scanSaveParts()
+    public function saveItems()
     {
-        return $this->hasMany(ScanSavePart::class, 'scan_save_id');
+        return $this->hasMany(SaveItem::class, 'scan_save_id');
     }
 }

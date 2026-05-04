@@ -4,7 +4,7 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Dashboard\ScanController;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Dashboard\SaveItemController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Dashboard\ProfileController;
 use App\Http\Controllers\Api\ScraperController;
@@ -16,7 +16,7 @@ Route::middleware('guest')->group(function () {
             Route::post('/', [RegisterController::class, 'Register']);
             Route::post('/check-email', [RegisterController::class, 'CheckEmail']);
             Route::get('/skin-tone', [RegisterController::class, 'GetSkinTone']);
-            Route::get('/body-shape', [RegisterController::class, 'GetBodyShape']); // ✅ tambah
+            Route::get('/body-shape', [RegisterController::class, 'GetBodyShape']);
         });
 
         Route::prefix('/login')->group(function () {
@@ -57,6 +57,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::patch('/', [ProfileController::class, 'update']);
         Route::post('/change-password', [ProfileController::class, 'changePassword']);
         Route::post('/change-img-url', [ProfileController::class, 'changeImgUrl']);
+    });
+
+    Route::prefix('saved')->group(function () {
+        Route::get('/', [SaveItemController::class, 'index']);
+        Route::post('/', [SaveItemController::class, 'store']);
     });
 });
 
