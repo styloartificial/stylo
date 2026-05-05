@@ -105,7 +105,7 @@ class ScraperController extends BaseController
             $scan = Scan::where('ticket_id', $ticketId)->first();
 
             if ($scan) {
-                $scan->status = "SUCCESS";
+                $scan->status = "COMPLETED";
                 $scan->save();
             }
 
