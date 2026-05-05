@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Dashboard;
 
+use App\Helpers\S3Helper;
 use App\Http\Controllers\BaseController;
 use App\Http\Requests\StoreSaveItemRequest;
 use App\Models\Scan;
@@ -93,6 +94,39 @@ class SaveItemController extends BaseController
             if ($scans->count() === 0) {
                 return $this->success(null);
             }
+
+            $scans->getCollection()->transform(function ($scan) {
+                if (!$scan->relationLoaded('scanResult') || !$scan->scanResult) {
+                    return $scan;
+                }
+
+                $imgUrls = $scan->scanResult->img_urls ?? [];
+
+                $scan->scanResult->img_urls = collect($imgUrls)
+                    ->map(function ($path) {
+                        if (empty($path)) {
+                            return $path;
+                        }
+
+                        if (filter_var($path, FILTER_VALIDATE_URL)) {
+                            return $path;
+                        }
+
+                        $normalized = str_replace('\\', '/', $path);
+                        $folder = trim(dirname($normalized), '/');
+                        $fileName = basename($normalized);
+
+                        if ($folder === '.' || $folder === '') {
+                            return $path;
+                        }
+
+                        return S3Helper::getUrlFileS3($folder, $fileName);
+                    })
+                    ->values()
+                    ->toArray();
+
+                return $scan;
+            });
 
             // STEP 4 — Return data
             return $this->success($scans);
