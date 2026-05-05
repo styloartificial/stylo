@@ -12,8 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('scan_saves', function (Blueprint $table) {
-            $table->text('img_url')->nullable()->change();
-            $table->text('product_url')->nullable()->change();
+            if (Schema::hasColumn('scan_saves', 'img_url')) {
+                $table->text('img_url')->nullable()->change();
+            }
+            if (Schema::hasColumn('scan_saves', 'product_url')) {
+                $table->text('product_url')->nullable()->change();
+            }
         });
     }
 
