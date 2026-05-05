@@ -7,6 +7,7 @@ use App\Services\FirebaseService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Helpers\FirebaseLogHelper;
+use App\Models\Scan;
 
 class ScraperController extends BaseController
 {
@@ -99,6 +100,14 @@ class ScraperController extends BaseController
                 'data'   => $storedData,
                 'status' => 'success',
             ]);
+
+            // 🔄 Update ke database lokal (Scan)
+            $scan = Scan::where('ticket_id', $ticketId)->first();
+
+            if ($scan) {
+                $scan->status = "SUCCESS";
+                $scan->save();
+            }
 
             // 🔁 Ambil ulang data terbaru (optional tapi aman)
             $updatedSnapshot = $ref->getSnapshot();
