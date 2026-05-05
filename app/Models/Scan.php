@@ -24,10 +24,6 @@ class Scan extends Model
         return $this->hasMany(ScanItemCategory::class, 'scan_id');
     }
 
-    public function scanResult()
-    {
-        return $this->hasOne(ScanResult::class, 'scan_id');
-    }
     public function scanSaves()
     {
         return $this->hasMany(ScanSave::class, 'scan_id');
