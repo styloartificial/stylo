@@ -80,9 +80,12 @@ class SaveItemController extends BaseController
                 ->whereHas('scanSaves', function ($q) use ($isPartial) {
                     $q->where('is_partial', $isPartial);
                 })
-                ->with(['scanSaves' => function ($q) use ($isPartial) {
-                    $q->where('is_partial', $isPartial);
-                }])
+                ->with([
+                    'scanResult',
+                    'scanSaves' => function ($q) use ($isPartial) {
+                        $q->where('is_partial', $isPartial);
+                    },
+                ])
                 ->orderByDesc('id')
                 ->paginate(10);
 
@@ -93,27 +96,6 @@ class SaveItemController extends BaseController
 
             // STEP 4 — Return data
             return $this->success($scans);
-
-        } catch (\Throwable $th) {
-            return $this->serverError($th);
-        }
-    }
-
-    public function show(Request $request, string $id): JsonResponse
-    {
-        try {
-            $userId = $request->user()->id;
-
-            $scan = Scan::where('id', $id)
-                ->where('user_id', $userId)
-                ->with(['scanResult', 'scanSaves', 'scanItemCategories.itemCategory'])
-                ->first();
-
-            if (!$scan) {
-                return $this->clientError('Data tidak ditemukan.');
-            }
-
-            return $this->success($scan);
 
         } catch (\Throwable $th) {
             return $this->serverError($th);
