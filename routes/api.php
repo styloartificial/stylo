@@ -62,6 +62,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('saved')->group(function () {
         Route::get('/', [SaveItemController::class, 'index']);
         Route::post('/', [SaveItemController::class, 'store']);
+        Route::get('/{id}', [SaveItemController::class, 'show']);
     });
 });
 

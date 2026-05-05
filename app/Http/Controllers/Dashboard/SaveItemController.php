@@ -87,12 +87,33 @@ class SaveItemController extends BaseController
                 ->paginate(10);
 
             // STEP 3 — Return null kalau kosong
-            if ($scans->isEmpty()) {
+            if ($scans->count() === 0) {
                 return $this->success(null);
             }
 
             // STEP 4 — Return data
             return $this->success($scans);
+
+        } catch (\Throwable $th) {
+            return $this->serverError($th);
+        }
+    }
+
+    public function show(Request $request, string $id): JsonResponse
+    {
+        try {
+            $userId = $request->user()->id;
+
+            $scan = Scan::where('id', $id)
+                ->where('user_id', $userId)
+                ->with(['scanResult', 'scanSaves', 'scanItemCategories.itemCategory'])
+                ->first();
+
+            if (!$scan) {
+                return $this->clientError('Data tidak ditemukan.');
+            }
+
+            return $this->success($scan);
 
         } catch (\Throwable $th) {
             return $this->serverError($th);
