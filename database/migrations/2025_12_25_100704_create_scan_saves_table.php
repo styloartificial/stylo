@@ -14,14 +14,16 @@ return new class extends Migration
         Schema::create('scan_saves', function (Blueprint $table) {
             $table->id();
             $table->foreignId('scan_id')->constrained('scans')->onDelete('cascade');
-            $table->enum('type', ['FULL', 'PARTIAL'])->default('FULL');
-            $table->json('img_urls')->nullable();
+            $table->text('img_url')->nullable();
+            $table->boolean('is_partial')->default(false);
             $table->string('product_name')->nullable();
             $table->float('rating')->nullable();
             $table->integer('count_purchase')->nullable();
             $table->float('price')->nullable();
-            $table->string('product_url')->nullable();
+            $table->text('product_url')->nullable();
             $table->timestamps();
+
+            $table->index(['scan_id', 'is_partial']);
         });
     }
 

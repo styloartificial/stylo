@@ -10,19 +10,19 @@ return new class extends Migration
     {
         Schema::table('scan_saves', function (Blueprint $table) {
             if (!Schema::hasColumn('scan_saves', 'product_name')) {
-                $table->string('product_name')->nullable()->after('img_url');
+                $table->string('product_name')->nullable();
             }
             if (!Schema::hasColumn('scan_saves', 'price')) {
-                $table->float('price')->nullable()->after('product_name');
+                $table->float('price')->nullable();
             }
             if (!Schema::hasColumn('scan_saves', 'rating')) {
-                $table->float('rating')->nullable()->after('price');
+                $table->float('rating')->nullable();
             }
             if (!Schema::hasColumn('scan_saves', 'count_purchase')) {
-                $table->integer('count_purchase')->nullable()->after('rating');
+                $table->integer('count_purchase')->nullable();
             }
             if (!Schema::hasColumn('scan_saves', 'product_url')) {
-                $table->string('product_url')->nullable()->after('count_purchase');
+                $table->text('product_url')->nullable();
             }
         });
     }
