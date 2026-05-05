@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('ticket_id')->unique()->nullable();
             $table->string('title');
-            $table->string('img_url');
+            $table->text('img_url');
             $table->enum('status', ['PENDING', 'COMPLETED', 'FAILED'])->default('PENDING');
             $table->timestamps();
         });
