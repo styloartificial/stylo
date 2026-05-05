@@ -128,7 +128,9 @@ class ScraperController extends BaseController
             ], 200);
 
         } catch (\Throwable $th) {
-            return response()->json([
+            \Illuminate\Support\Facades\Log::error("Ada error!");
+            \Illuminate\Support\Facades\Log::error($th);
+                       return response()->json([
                 'code'    => 500,
                 'message' => $th->getMessage(),
                 'data'    => null,
