@@ -27,5 +27,6 @@ class DatabaseSeeder extends Seeder
         $this->call(MSkinToneSeeder::class);
         $this->call(UserSeeder::class);
         $this->call(MBodyShapeSeeder::class);
+        $this->call(UserScraperSeeder::class);
     }
 }
