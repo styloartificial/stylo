@@ -28,4 +28,5 @@ class ScanSave extends Model
     {
         return $this->belongsTo(Scan::class, 'scan_id');
     }
+    
 }

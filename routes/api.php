@@ -8,6 +8,7 @@ use App\Http\Controllers\Dashboard\SaveItemController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Dashboard\ProfileController;
 use App\Http\Controllers\Api\ScraperController;
+use App\Http\Controllers\Dashboard\HomeController;
 
 // Route middleware guest
 Route::middleware('guest')->group(function () {
@@ -35,6 +36,8 @@ Route::middleware('guest')->group(function () {
 
 // Route middleware auth
 Route::middleware('auth:sanctum')->group(function () {
+
+    Route::get('/homepage', HomeController::class);
 
     Route::prefix('core')->group(function () {
 
