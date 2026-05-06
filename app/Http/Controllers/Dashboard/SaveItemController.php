@@ -8,6 +8,7 @@ use App\Http\Requests\StoreSaveItemRequest;
 use App\Models\Scan;
 use App\Models\ScanSave;
 use App\Services\FirebaseService;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -68,7 +69,7 @@ class SaveItemController extends BaseController
     public function index(Request $request): JsonResponse
     {
         try {
-            // STEP 1 — Validasi query param
+            // STEP 1 — Validasi is_partial
             if (!$request->has('is_partial') || !in_array($request->query('is_partial'), ['0', '1'])) {
                 return $this->clientError('Parameter is_partial wajib diisi (0 atau 1).');
             }
@@ -76,7 +77,42 @@ class SaveItemController extends BaseController
             $isPartial = (int) $request->query('is_partial');
             $userId    = $request->user()->id;
 
-            // STEP 2 — Ambil data
+            // STEP 2 — Validasi from_date & to_date
+            $fromDate = $request->query('from_date');
+            $toDate   = $request->query('to_date');
+
+            if ($fromDate) {
+                // Validasi format from_date
+                try {
+                    $fromDate = Carbon::parse($fromDate)->startOfDay();
+                } catch (\Exception $e) {
+                    return $this->clientError('Format from_date tidak valid. Gunakan format YYYY-MM-DD.');
+                }
+
+                // Kalau from_date diisi, to_date wajib
+                if (!$toDate) {
+                    return $this->clientError('to_date wajib diisi ketika from_date diisi.');
+                }
+
+                // Validasi format to_date
+                try {
+                    $toDate = Carbon::parse($toDate)->endOfDay();
+                } catch (\Exception $e) {
+                    return $this->clientError('Format to_date tidak valid. Gunakan format YYYY-MM-DD.');
+                }
+
+                // to_date harus >= from_date
+                if ($toDate->lt($fromDate)) {
+                    return $this->clientError('to_date harus lebih besar atau sama dengan from_date.');
+                }
+
+                // to_date tidak boleh lebih dari hari ini
+                if ($toDate->gt(Carbon::today()->endOfDay())) {
+                    return $this->clientError('to_date tidak boleh lebih dari hari ini.');
+                }
+            }
+
+            // STEP 3 — Ambil data
             $scans = Scan::where('user_id', $userId)
                 ->whereHas('scanSaves', function ($q) use ($isPartial) {
                     $q->where('is_partial', $isPartial);
@@ -87,10 +123,14 @@ class SaveItemController extends BaseController
                         $q->where('is_partial', $isPartial);
                     },
                 ])
+                // ✅ Filter tanggal kalau from_date & to_date diisi
+                ->when($fromDate, function ($q) use ($fromDate, $toDate) {
+                    $q->whereBetween('created_at', [$fromDate, $toDate]);
+                })
                 ->orderByDesc('id')
                 ->paginate(10);
 
-            // STEP 3 — Return null kalau kosong
+            // STEP 4 — Return null kalau kosong
             if ($scans->count() === 0) {
                 return $this->success(null);
             }
@@ -104,21 +144,14 @@ class SaveItemController extends BaseController
 
                 $scan->scanResult->img_urls = collect($imgUrls)
                     ->map(function ($path) {
-                        if (empty($path)) {
-                            return $path;
-                        }
-
-                        if (filter_var($path, FILTER_VALIDATE_URL)) {
-                            return $path;
-                        }
+                        if (empty($path)) return $path;
+                        if (filter_var($path, FILTER_VALIDATE_URL)) return $path;
 
                         $normalized = str_replace('\\', '/', $path);
-                        $folder = trim(dirname($normalized), '/');
-                        $fileName = basename($normalized);
+                        $folder     = trim(dirname($normalized), '/');
+                        $fileName   = basename($normalized);
 
-                        if ($folder === '.' || $folder === '') {
-                            return $path;
-                        }
+                        if ($folder === '.' || $folder === '') return $path;
 
                         return S3Helper::getUrlFileS3($folder, $fileName);
                     })
@@ -128,7 +161,7 @@ class SaveItemController extends BaseController
                 return $scan;
             });
 
-            // STEP 4 — Return data
+            // STEP 5 — Return data
             return $this->success($scans);
 
         } catch (\Throwable $th) {
