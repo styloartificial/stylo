@@ -2,15 +2,75 @@
 
 namespace App\Http\Controllers\Dashboard;
 
+use App\Helpers\S3Helper;
 use App\Http\Controllers\BaseController;
 use App\Models\MSkinTone;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 use Throwable;
 
 class ProfileController extends BaseController
 {
+    protected function normalizeSupabasePublicUrl(?string $value): ?string
+    {
+        if (empty($value)) {
+            return $value;
+        }
+
+        if (filter_var($value, FILTER_VALIDATE_URL)) {
+            return $value;
+        }
+
+        $normalized = str_replace('\\', '/', $value);
+        $folder = trim(dirname($normalized), '/');
+        $fileName = basename($normalized);
+
+        if ($folder === '.' || $folder === '') {
+            return $value;
+        }
+
+        return S3Helper::getUrlFileS3($folder, $fileName);
+    }
+
+    protected function getSupabaseRelativePathFromValue(?string $value): ?string
+    {
+        if (empty($value)) {
+            return null;
+        }
+
+        if (!filter_var($value, FILTER_VALIDATE_URL)) {
+            return ltrim(str_replace('\\', '/', $value), '/');
+        }
+
+        $supabasePublicBase = config('services.supabase.url')
+            . '/storage/v1/object/public/'
+            . config('services.supabase.bucket')
+            . '/';
+
+        if (str_starts_with($value, $supabasePublicBase)) {
+            return ltrim(str_replace($supabasePublicBase, '', $value), '/');
+        }
+
+        return null;
+    }
+
+    protected function deleteSupabaseObject(string $relativePath): void
+    {
+        $relativePath = ltrim(str_replace('\\', '/', $relativePath), '/');
+
+        Http::withHeaders([
+            'apikey'        => config('services.supabase.key'),
+            'Authorization' => 'Bearer ' . config('services.supabase.key'),
+        ])->delete(
+            config('services.supabase.url')
+                . '/storage/v1/object/'
+                . config('services.supabase.bucket')
+                . '/'
+                . $relativePath
+        );
+    }
+
     public function index(Request $request)
     {
         try {
@@ -18,27 +78,27 @@ class ProfileController extends BaseController
             $user->load('userDetail.skinTone');
 
             $data = [
-                'user_id' => $user->id,
-                'email' => $user->email,
-                'name' => $user->name,
+                'user_id'    => $user->id,
+                'email'      => $user->email,
+                'name'       => $user->name,
                 'userDetail' => [
-                    'img_url' => $user->userDetail?->img_url,
-                    'gender' => $user->userDetail?->gender,
-                    'height' => $user->userDetail?->height,
-                    'weight' => $user->userDetail?->weight,
+                    'img_url'      => $this->normalizeSupabasePublicUrl($user->userDetail?->img_url),
+                    'gender'       => $user->userDetail?->gender,
+                    'height'       => $user->userDetail?->height,
+                    'weight'       => $user->userDetail?->weight,
                     'skin_tone_id' => $user->userDetail?->skin_tone_id,
-                    'skin_tone' => $user->userDetail?->skinTone ? [
-                        'id' => $user->userDetail->skinTone->id,
-                        'name' => $user->userDetail->skinTone->title,
-                        'description' => $user->userDetail->skinTone->description
-                    ] : null
-                ]
+                    'skin_tone'    => $user->userDetail?->skinTone ? [
+                        'id'          => $user->userDetail->skinTone->id,
+                        'name'        => $user->userDetail->skinTone->title,
+                        'description' => $user->userDetail->skinTone->description,
+                    ] : null,
+                ],
             ];
 
             return response()->json([
-                'code' => 200,
+                'code'    => 200,
                 'message' => 'Success.',
-                'data' => $data
+                'data'    => $data,
             ]);
 
         } catch (Throwable $th) {
@@ -49,26 +109,21 @@ class ProfileController extends BaseController
     public function getSkinTone()
     {
         try {
-            // Mengambil semua data dari table m_skin_tones
             $skinTones = MSkinTone::all();
 
-            // Mapping agar output sesuai dengan permintaan (title -> name)
-            $formattedData = $skinTones->map(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'name' => $item->title, // Mengubah 'title' menjadi 'name' sesuai dokumentasi API
-                    'description' => $item->description,
-                ];
-            });
+            $formattedData = $skinTones->map(fn($item) => [
+                'id'          => $item->id,
+                'name'        => $item->title,
+                'description' => $item->description,
+            ]);
 
             return response()->json([
-                'code' => 200,
+                'code'    => 200,
                 'message' => 'Success.',
-                'data' => $formattedData
+                'data'    => $formattedData,
             ]);
 
         } catch (Throwable $th) {
-            // Menggunakan method error handling dari BaseController kamu
             return $this->serverError($th);
         }
     }
@@ -78,56 +133,51 @@ class ProfileController extends BaseController
         try {
             $user = $request->user();
 
-            // 1. Validasi Input
             $request->validate([
-                "name" => ["nullable", "string", "max:100"],
-                "gender" => ["nullable", "in:MALE,FEMALE"],
-                "height" => ["nullable", "numeric"],
-                "weight" => ["nullable", "numeric"],
-                "skin_tone_id" => ["nullable", "exists:m_skin_tones,id"]
+                'name'         => ['nullable', 'string', 'max:100'],
+                'gender'       => ['nullable', 'in:MALE,FEMALE'],
+                'height'       => ['nullable', 'numeric'],
+                'weight'       => ['nullable', 'numeric'],
+                'skin_tone_id' => ['nullable', 'exists:m_skin_tones,id'],
             ]);
 
-            // 2. Update tabel 'users' (untuk field name)
             if ($request->has('name')) {
                 $user->update(['name' => $request->name]);
             }
 
-            // 3. Update atau Create tabel 'user_details'
-            // Kita ambil data yang dikirim saja untuk diupdate
             $detailData = $request->only(['gender', 'height', 'weight', 'skin_tone_id']);
-            
+
             if (!empty($detailData)) {
                 $user->userDetail()->updateOrCreate(
-                    ['user_id' => $user->id], // Identifier
-                    $detailData               // Data yang diupdate
+                    ['user_id' => $user->id],
+                    $detailData
                 );
             }
 
-            // 4. Load ulang data terbaru beserta relasinya untuk response
             $user->load('userDetail.skinTone');
 
             $data = [
-                'user_id' => $user->id,
-                'email' => $user->email,
-                'name' => $user->name,
+                'user_id'    => $user->id,
+                'email'      => $user->email,
+                'name'       => $user->name,
                 'userDetail' => [
-                    'img_url' => $user->userDetail?->img_url,
-                    'gender' => $user->userDetail?->gender,
-                    'height' => $user->userDetail?->height,
-                    'weight' => $user->userDetail?->weight,
+                    'img_url'      => $this->normalizeSupabasePublicUrl($user->userDetail?->img_url),
+                    'gender'       => $user->userDetail?->gender,
+                    'height'       => $user->userDetail?->height,
+                    'weight'       => $user->userDetail?->weight,
                     'skin_tone_id' => $user->userDetail?->skin_tone_id,
-                    'skin_tone' => $user->userDetail?->skinTone ? [
-                        'id' => $user->userDetail->skinTone->id,
-                        'name' => $user->userDetail->skinTone->title, // Pakai .title sesuai model MSkinTone
-                        'description' => $user->userDetail->skinTone->description
-                    ] : null
-                ]
+                    'skin_tone'    => $user->userDetail?->skinTone ? [
+                        'id'          => $user->userDetail->skinTone->id,
+                        'name'        => $user->userDetail->skinTone->title,
+                        'description' => $user->userDetail->skinTone->description,
+                    ] : null,
+                ],
             ];
 
             return response()->json([
-                'code' => 200,
+                'code'    => 200,
                 'message' => 'Success update data.',
-                'data' => $data
+                'data'    => $data,
             ]);
 
         } catch (Throwable $th) {
@@ -140,31 +190,27 @@ class ProfileController extends BaseController
         try {
             $user = $request->user();
 
-            // 1. Validasi Input
-            // 'confirmed' artinya Laravel akan mencari input 'new_password_confirmation'
             $request->validate([
                 'old_password' => ['required', 'string'],
-                'new_password' => ['required', 'string', 'min:8', 'confirmed'], 
+                'new_password' => ['required', 'string', 'min:8', 'confirmed'],
             ]);
 
-            // 2. Cek apakah password lama sesuai dengan database
             if (!Hash::check($request->old_password, $user->password)) {
                 return response()->json([
-                    'code' => 400,
+                    'code'    => 400,
                     'message' => 'Old password does not match.',
-                    'data' => null
+                    'data'    => null,
                 ], 400);
             }
 
-            // 3. Update Password Baru (Otomatis di-hash oleh Laravel jika menggunakan model User standar)
             $user->update([
-                'password' => Hash::make($request->new_password)
+                'password' => Hash::make($request->new_password),
             ]);
 
             return response()->json([
-                'code' => 200,
+                'code'    => 200,
                 'message' => 'Success change password.',
-                'data' => null
+                'data'    => null,
             ]);
 
         } catch (Throwable $th) {
@@ -177,40 +223,49 @@ class ProfileController extends BaseController
         try {
             $user = $request->user();
 
-            // 1. Validasi Input
+            // 1. Validasi input
             $request->validate([
-                'img' => ['required', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'] // limit 2MB
+                'img' => ['required', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             ]);
 
-            // 2. Proses Upload File
-            if ($request->hasFile('img')) {
-                $file = $request->file('img');
-                
-                // Buat nama file unik: user_id_timestamp.ekstensi
-                $fileName = $user->id . '_' . time() . '.' . $file->getClientOriginalExtension();
-                
-                // Simpan ke folder 'public/profile_images'
-                $path = $file->storeAs('profile_images', $fileName, 'public');
-                $url = asset('storage/' . $path);
+            $file   = $request->file('img');
+            $folder = 'profile-images';
 
-                // 3. Hapus foto lama jika ada (opsional tapi disarankan)
-                if ($user->userDetail && $user->userDetail->img_url) {
-                    // Ambil path relatif dari URL lama untuk dihapus dari storage
-                    $oldPath = str_replace(asset('storage/'), '', $user->userDetail->img_url);
-                    Storage::disk('public')->delete($oldPath);
+            // 2. Simpan ke temp storage lokal (sekaligus konversi ke webp via S3Helper)
+            $tempFileName = S3Helper::storeFileTemp($file);
+
+            // 3. Upload dari temp ke Supabase S3
+            S3Helper::storeFileToS3($folder, $tempFileName);
+
+            // 4. Bersihkan temp file setelah upload
+            S3Helper::removeFileTemp($tempFileName);
+
+            // 5. Generate public URL dari Supabase
+            $newImgUrl = S3Helper::getUrlFileS3($folder, $tempFileName);
+
+            // 6. Hapus foto lama dari Supabase jika ada
+            $oldImgUrl = $user->userDetail?->img_url;
+            $oldRelativePath = $this->getSupabaseRelativePathFromValue($oldImgUrl);
+
+            // 7. Update database
+            $user->userDetail()->updateOrCreate(
+                ['user_id' => $user->id],
+                ['img_url' => $newImgUrl]
+            );
+
+            if ($oldRelativePath) {
+                try {
+                    $this->deleteSupabaseObject($oldRelativePath);
+                } catch (Throwable) {
                 }
-
-                // 4. Update Database
-                $user->userDetail()->updateOrCreate(
-                    ['user_id' => $user->id],
-                    ['img_url' => $url]
-                );
             }
 
             return response()->json([
-                'code' => 200,
+                'code'    => 200,
                 'message' => 'Success change profile image.',
-                'data' => null
+                'data'    => [
+                    'img_url' => $newImgUrl,
+                ],
             ]);
 
         } catch (Throwable $th) {
