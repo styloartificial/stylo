@@ -3,23 +3,14 @@
 namespace App\Http\Requests\Auth;
 
 use App\Http\Requests\BaseRequest;
-use Illuminate\Foundation\Http\FormRequest;
 
 class RegisterRequest extends BaseRequest
-{   
-    /**
-     * Determine if the user is authorized to make this request.
-     */
+{
     public function authorize(): bool
     {
         return true;
     }
-    
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
+
     public function rules(): array
     {
         return [
@@ -27,11 +18,18 @@ class RegisterRequest extends BaseRequest
             'email'         => ['required', 'string', 'email', 'unique:users,email'],
             'password'      => ['required', 'string', 'confirmed'],
             'gender'        => ['required', 'in:MALE,FEMALE'],
-            'date_of_birth' => ['required', 'date', 'before_or_equal:' . now()->subYears(17)->format('Y-m-d')], // 👈 tambah ini
+            'date_of_birth' => ['required', 'date', 'before_or_equal:' . now()->subYears(17)->format('Y-m-d')], 
             'height'        => ['required', 'numeric'],
             'weight'        => ['required', 'numeric'],
             'skin_tone_id'  => ['required', 'exists:m_skin_tones,id'],
             'body_shape_id' => ['required', 'exists:m_body_shapes,id'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'date_of_birth.before_or_equal' => 'Usia minimal untuk mendaftar adalah 17 tahun.',
         ];
     }
 }
