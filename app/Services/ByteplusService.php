@@ -24,7 +24,7 @@ class ByteplusService
         ];
     }
 
-    protected static function analyze(string $prompt, array $imagesUrl): array
+    public static function analyze(string $prompt, array $imagesUrl): array
     {
         $apiKey = config('services.openai.key');
 
@@ -163,7 +163,7 @@ class ByteplusService
         return $decoded;
     }
 
-    protected static function generateImages(string $prompt, string $imageUrl, int $count): array
+    public static function generateImages(string $prompt, string $imageUrl, int $count): array
     {
         $apiKey = config('services.openai.key');
 
