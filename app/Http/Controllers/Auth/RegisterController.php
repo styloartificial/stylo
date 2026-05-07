@@ -11,6 +11,36 @@ use App\Models\User;
 
 class RegisterController extends BaseController
 {
+    public function CheckEmail(CheckEmailRequest $request)
+    {
+        try {
+            $data = $request->validated();
+            return $this->success();
+        } catch (\Throwable $th) {
+            return $this->serverError($th);
+        }
+    }
+
+    public function GetSkinTone()
+    {
+        try {
+            $data = MSkinTone::all();
+            return $this->success($data);
+        } catch (\Throwable $th) {
+            return $this->serverError($th);
+        }
+    }
+
+    public function GetBodyShape()
+    {
+        try {
+            $data = MBodyShape::all();
+            return $this->success($data);
+        } catch (\Throwable $th) {
+            return $this->serverError($th);
+        }
+    }
+
     public function Register(RegisterRequest $request)
     {
         try {
@@ -44,5 +74,4 @@ class RegisterController extends BaseController
             return $this->serverError($th);
         }
     }
-
 }
