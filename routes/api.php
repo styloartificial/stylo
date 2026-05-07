@@ -38,6 +38,7 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/homepage', HomeController::class);
+    Route::get('/me', \App\Http\Controllers\Auth\MeController::class);
 
     Route::prefix('core')->group(function () {
 
