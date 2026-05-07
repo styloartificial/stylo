@@ -12,6 +12,65 @@ use Throwable;
 
 class ProfileController extends BaseController
 {
+    protected function normalizeSupabasePublicUrl(?string $value): ?string
+    {
+        if (empty($value)) {
+            return $value;
+        }
+
+        if (filter_var($value, FILTER_VALIDATE_URL)) {
+            return $value;
+        }
+
+        $normalized = str_replace('\\', '/', $value);
+        $folder = trim(dirname($normalized), '/');
+        $fileName = basename($normalized);
+
+        if ($folder === '.' || $folder === '') {
+            return $value;
+        }
+
+        return S3Helper::getUrlFileS3($folder, $fileName);
+    }
+
+    protected function getSupabaseRelativePathFromValue(?string $value): ?string
+    {
+        if (empty($value)) {
+            return null;
+        }
+
+        if (!filter_var($value, FILTER_VALIDATE_URL)) {
+            return ltrim(str_replace('\\', '/', $value), '/');
+        }
+
+        $supabasePublicBase = config('services.supabase.url')
+            . '/storage/v1/object/public/'
+            . config('services.supabase.bucket')
+            . '/';
+
+        if (str_starts_with($value, $supabasePublicBase)) {
+            return ltrim(str_replace($supabasePublicBase, '', $value), '/');
+        }
+
+        return null;
+    }
+
+    protected function deleteSupabaseObject(string $relativePath): void
+    {
+        $relativePath = ltrim(str_replace('\\', '/', $relativePath), '/');
+
+        Http::withHeaders([
+            'apikey'        => config('services.supabase.key'),
+            'Authorization' => 'Bearer ' . config('services.supabase.key'),
+        ])->delete(
+            config('services.supabase.url')
+                . '/storage/v1/object/'
+                . config('services.supabase.bucket')
+                . '/'
+                . $relativePath
+        );
+    }
+
     public function index(Request $request)
     {
         try {
@@ -23,7 +82,7 @@ class ProfileController extends BaseController
                 'email'      => $user->email,
                 'name'       => $user->name,
                 'userDetail' => [
-                    'img_url'      => $user->userDetail?->img_url,
+                    'img_url'      => $this->normalizeSupabasePublicUrl($user->userDetail?->img_url),
                     'gender'       => $user->userDetail?->gender,
                     'height'       => $user->userDetail?->height,
                     'weight'       => $user->userDetail?->weight,
@@ -36,7 +95,12 @@ class ProfileController extends BaseController
                 ],
             ];
 
-            return $this->success($data);
+            return response()->json([
+                'code'    => 200,
+                'message' => 'Success.',
+                'data'    => $data,
+            ]);
+
         } catch (Throwable $th) {
             return $this->serverError($th);
         }
@@ -53,7 +117,11 @@ class ProfileController extends BaseController
                 'description' => $item->description,
             ]);
 
-            return $this->success($formattedData);
+            return response()->json([
+                'code'    => 200,
+                'message' => 'Success.',
+                'data'    => $formattedData,
+            ]);
 
         } catch (Throwable $th) {
             return $this->serverError($th);
@@ -93,7 +161,7 @@ class ProfileController extends BaseController
                 'email'      => $user->email,
                 'name'       => $user->name,
                 'userDetail' => [
-                    'img_url'      => $user->userDetail?->img_url,
+                    'img_url'      => $this->normalizeSupabasePublicUrl($user->userDetail?->img_url),
                     'gender'       => $user->userDetail?->gender,
                     'height'       => $user->userDetail?->height,
                     'weight'       => $user->userDetail?->weight,
@@ -106,7 +174,11 @@ class ProfileController extends BaseController
                 ],
             ];
 
-            return $this->success($data);   
+            return response()->json([
+                'code'    => 200,
+                'message' => 'Success update data.',
+                'data'    => $data,
+            ]);
 
         } catch (Throwable $th) {
             return $this->serverError($th);
@@ -124,14 +196,22 @@ class ProfileController extends BaseController
             ]);
 
             if (!Hash::check($request->old_password, $user->password)) {
-                return $this->clientError("Old password does not match.");
+                return response()->json([
+                    'code'    => 400,
+                    'message' => 'Old password does not match.',
+                    'data'    => null,
+                ], 400);
             }
 
             $user->update([
                 'password' => Hash::make($request->new_password),
             ]);
-            
-            return $this->success(null);
+
+            return response()->json([
+                'code'    => 200,
+                'message' => 'Success change password.',
+                'data'    => null,
+            ]);
 
         } catch (Throwable $th) {
             return $this->serverError($th);
@@ -145,7 +225,7 @@ class ProfileController extends BaseController
 
             // 1. Validasi input
             $request->validate([
-                'img' => ['required', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
+                'img' => ['required', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             ]);
 
             $file   = $request->file('img');
@@ -163,13 +243,31 @@ class ProfileController extends BaseController
             // 5. Generate public URL dari Supabase
             $newImgUrl = S3Helper::getUrlFileS3($folder, $tempFileName);
 
+            // 6. Hapus foto lama dari Supabase jika ada
+            $oldImgUrl = $user->userDetail?->img_url;
+            $oldRelativePath = $this->getSupabaseRelativePathFromValue($oldImgUrl);
+
             // 7. Update database
             $user->userDetail()->updateOrCreate(
                 ['user_id' => $user->id],
                 ['img_url' => $newImgUrl]
             );
 
-            return $this->success(['img_url' => $newImgUrl]);
+            if ($oldRelativePath) {
+                try {
+                    $this->deleteSupabaseObject($oldRelativePath);
+                } catch (Throwable) {
+                }
+            }
+
+            return response()->json([
+                'code'    => 200,
+                'message' => 'Success change profile image.',
+                'data'    => [
+                    'img_url' => $newImgUrl,
+                ],
+            ]);
+
         } catch (Throwable $th) {
             return $this->serverError($th);
         }
