@@ -25,7 +25,8 @@ class ProcessGetRecommendationStyle implements ShouldQueue
 
     public function handle(): void
     {
-        Log::info("Run get recommendation style..");
+        try {
+            Log::info("Run get recommendation style..");
         $scan = Scan::with('user.userDetail.skinTone', 'user.userDetail.bodyShape')
             ->findOrFail($this->scanId);
 
@@ -55,5 +56,9 @@ class ProcessGetRecommendationStyle implements ShouldQueue
             'status'     => 'pending',
             'created_at' => now()->toDateTimeString(),
         ]);
+        Log::info("Get recommendation style done.");
+        } catch (\Throwable $th) {
+            Log::error("Error get recommendation style: {$th->getMessage()}");
+        }
     }
 }
