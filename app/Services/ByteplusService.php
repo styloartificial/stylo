@@ -14,7 +14,7 @@ class ByteplusService
         }
 
         $analysis = self::analyze($prompt, $imagesUrl);
-        
+
         $promptForImageGen = "Edit foto orang ini berdasarkan summary berikut dan hasilkan 3 foto dengan pose gerakan yang berbeda. " . ($analysis['summary'] ?? '');
         $images = self::generateImages($promptForImageGen, $imagesUrl[0], $generateImages);
 
@@ -27,18 +27,18 @@ class ByteplusService
     protected static function analyze(string $prompt, array $imagesUrl): array
     {
         $apiKey = config('services.openai.key');
+
         $content = [
             [
                 'type' => 'input_text',
-                'text' => $prompt
-            ]
+                'text' => $prompt,
+            ],
         ];
+
         foreach ($imagesUrl as $url) {
             $content[] = [
-                'type' => 'image_url',
-                'image_url' => [
-                    'url' => $url,
-                ],
+                'type' => 'input_image',
+                'image_url' => $url,
             ];
         }
 
@@ -46,84 +46,71 @@ class ByteplusService
             'Authorization' => "Bearer {$apiKey}",
             'Content-Type' => 'application/json',
             'ark-beta-mcp' => 'true',
-        ])
-            ->withOptions([
-                'stream' => true,
-            ])
-            ->post('https://ark.ap-southeast.bytepluses.com/api/v3/responses', [
-                'model' => 'seed-2-0-lite-260228',
-                'stream' => true,
-                'tools' => [
-                    [
-                        'type' => 'mcp',
-                        'server_label' => 'deepwiki',
-                        'server_url' => 'https://mcp.deepwiki.com/mcp',
-                        'require_approval' => 'never',
-                    ]
+        ])->post('https://ark.ap-southeast.bytepluses.com/api/v3/responses', [
+            'model' => 'seed-2-0-lite-250328',
+            'stream' => false,
+            'input' => [
+                [
+                    'role' => 'user',
+                    'content' => $content,
                 ],
-                'input' => [
-                    [
-                        'role' => 'user',
-                        'content' => $content,
-                    ]
-                ]
-            ]);
+            ],
+        ]);
 
-        $body = $response->toPsrResponse()->getBody();
+        if (!$response->successful()) {
+            throw new \Exception(
+                'BytePlus API Error: ' . $response->body()
+            );
+        }
 
-        $buffer = '';
-        $structured = null;
+        $data = $response->json();
 
-        while (!$body->eof()) {
+        $text = '';
 
-            $chunk = $body->read(1024);
+        foreach (($data['output'] ?? []) as $output) {
 
-            $lines = explode("\n", $chunk);
+            if (($output['type'] ?? null) !== 'message') {
+                continue;
+            }
 
-            foreach ($lines as $line) {
+            foreach (($output['content'] ?? []) as $item) {
 
-                $line = trim($line);
-
-                if (!$line) continue;
-
-                if (str_starts_with($line, 'data:')) {
-                    $line = trim(substr($line, 5));
-                }
-
-                if ($line === '[DONE]') continue;
-
-                $json = json_decode($line, true);
-
-                if (!$json) continue;
-
-                if (($json['type'] ?? null) === 'response.completed') {
-
-                    $output = $json['response']['output'] ?? [];
-
-                    foreach ($output as $item) {
-
-                        if (($item['type'] ?? null) === 'message') {
-
-                            foreach ($item['content'] ?? [] as $content) {
-
-                                if (($content['type'] ?? null) === 'output_text') {
-
-                                    $text = $content['text'] ?? '';
-
-                                    $decoded = json_decode($text, true);
-
-                                    if (json_last_error() === JSON_ERROR_NONE) {
-                                        $structured = $decoded;
-                                    }
-                                }
-                            }
-                        }
-                    }
+                if (($item['type'] ?? null) === 'output_text') {
+                    $text .= $item['text'] ?? '';
                 }
             }
         }
 
-        return $structured;
+        if (empty($text)) {
+            throw new \Exception(
+                'Empty response from BytePlus: ' . json_encode($data)
+            );
+        }
+
+        $text = trim($text);
+
+        $text = preg_replace('/^```json\s*/i', '', $text);
+        $text = preg_replace('/^```\s*/i', '', $text);
+        $text = preg_replace('/\s*```$/i', '', $text);
+
+        $text = trim($text);
+
+        preg_match('/\{.*\}/s', $text, $matches);
+
+        $jsonString = $matches[0] ?? $text;
+
+        $decoded = json_decode($jsonString, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new \Exception(
+                'Invalid JSON response: ' .
+                    json_last_error_msg() .
+                    "\n\nRaw response:\n" .
+                    $text
+            );
+        }
+
+        return $decoded;
     }
 
     protected static function generateImages(string $prompt, string $imageUrl, int $count): array
