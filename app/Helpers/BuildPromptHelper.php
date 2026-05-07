@@ -3,17 +3,17 @@
 namespace App\Helpers;
 
 use App\Services\FirebaseService;
-use App\Services\OpenAIService;
 use App\Helpers\S3Helper;
 use App\Helpers\FirebaseLogHelper;
 use App\Models\Scan;
+use App\Services\ByteplusService;
+use Illuminate\Support\Facades\Http;
 
-class BuildPromptHelper {
-    public static function run(Scan $scan) {
+class BuildPromptHelper
+{
+    public static function run(Scan $scan)
+    {
 
-        // =========================
-        // INITIAL
-        // =========================
         $db = FirebaseService::database();
         $ticketId = $scan->ticket_id;
 
@@ -22,9 +22,6 @@ class BuildPromptHelper {
         $user = $scan->user;
         $userDetail = $user->userDetail;
 
-        // =========================
-        // VALIDATION
-        // =========================
         if (!$userDetail) {
             throw new \Exception("User detail tidak ditemukan");
         }
@@ -33,15 +30,6 @@ class BuildPromptHelper {
             throw new \Exception("Scan image wajib ada");
         }
 
-        // =========================
-        // IMAGE DOWNLOAD (SAFE)
-        // =========================
-        $userProfileImg = !empty($userDetail->img_url)
-            ? S3Helper::downloadToTemp($userDetail->img_url)
-            : null;
-
-        $scanImg = S3Helper::downloadToTemp($scan->img_url);
-
         $userGender    = $userDetail->gender;
         $userHeight    = $userDetail->height;
         $userWeight    = $userDetail->weight;
@@ -49,14 +37,10 @@ class BuildPromptHelper {
             ? "{$userDetail->skinTone->title} ({$userDetail->skinTone->description})"
             : "tidak diketahui";
 
-        // ✅ tambah body shape
         $userBodyShape = $userDetail->bodyShape
             ? "{$userDetail->bodyShape->title} ({$userDetail->bodyShape->description})"
             : "tidak diketahui";
 
-        // =========================
-        // CATEGORY PROCESSING
-        // =========================
         $scanCategories = collect($scan->categories);
 
         $scanCategoryItems   = $scanCategories->where('type', 'item')->pluck('title')->implode(', ');
@@ -66,9 +50,6 @@ class BuildPromptHelper {
             ? null
             : $scanCategories->where('type', 'hijab')->pluck('title')->implode(', ');
 
-        // =========================
-        // BUILD PROMPT
-        // =========================
         $promptParts = [];
 
         if (!empty($scanCategoryItems))   $promptParts[] = "item: $scanCategoryItems";
@@ -80,7 +61,6 @@ class BuildPromptHelper {
 
         $outfitDetail = $scan->outfit_detail ?? null;
 
-        // ✅ tambah body shape ke prompt
         $prompt = "
         Berdasarkan foto orang ini, analisa outfit dan buatkan rekomendasi.
 
@@ -96,6 +76,7 @@ class BuildPromptHelper {
 
         {
         \"summary\": \"string (penjelasan outfit lengkap dalam 1 paragraf)\",
+        \"title\": \"string (judul singkat untuk outfit ini. Didapat dari rangkuman summary)\",
         \"products\": [
             {
             \"name\": \"string\",
@@ -104,79 +85,57 @@ class BuildPromptHelper {
             }
         ]
         }
-
-        Tambahkan juga 3 gambar dengan pose berbeda tanpa mengubah wajah.
         ";
 
-        // =========================
-        // TEMP IMAGES
-        // =========================
-        $tempImages = array_values(array_filter([
-            $userProfileImg,
-            $scanImg
-        ]));
-
-        $promptBuild = [
-            'prompt' => $prompt,
-            'temp_images' => $tempImages,
-            'generate_images' => 1
+        $imagesUrl = [
+            $scan->img_url,
+            $userDetail->img_url ?? null,
         ];
 
-        // =========================
-        // EXECUTE AI
-        // =========================
         try {
             FirebaseLogHelper::logPromptSent($db, $ticketId);
 
-            $result = OpenAIService::run($promptBuild);
+            $result = ByteplusService::run($prompt, $imagesUrl, 3);
 
             FirebaseLogHelper::logPromptCompleted($db, $ticketId);
 
-            // =========================
-            // HANDLE AI RESPONSE
-            // =========================
             $analysis = $result['analysis'] ?? [];
             $summary  = $analysis['summary'] ?? null;
             $products = $analysis['products'] ?? [];
+            $title = $analysis['title'] ?? null;
 
             if (empty($summary)) {
                 $summary = "Tidak dapat menghasilkan summary outfit saat ini.";
             }
 
-            // =========================
-            // SAVE IMAGES
-            // =========================
             $summaryUrls = [];
 
             if (!empty($result['images'])) {
-                foreach ($result['images'] as $tempImg) {
+                foreach ($result['images'] as $image) {
+                    $tempImg = tempnam(sys_get_temp_dir(), 'summary_');
+                    $response = Http::get($image);
+                    file_put_contents($tempImg, $response->body());
+
                     $s3Path = S3Helper::storeFileToS3(
                         "scans/{$scan->ticket_id}/summary",
                         $tempImg
                     );
+                    
                     $summaryUrls[] = $s3Path;
                     S3Helper::removeFileTemp($tempImg);
                 }
             }
 
-            // =========================
-            // SAVE RESULT
-            // =========================
             $scan->scanResult()->create([
                 'summary'  => $summary,
                 'img_urls' => $summaryUrls
             ]);
+            $scan->title = $title;
+            $scan->save();
 
             return $products;
-
         } catch (\Throwable $e) {
             throw $e;
-        } finally {
-            // =========================
-            // CLEANUP
-            // =========================
-            if ($userProfileImg) S3Helper::removeFileTemp($userProfileImg);
-            if ($scanImg) S3Helper::removeFileTemp($scanImg);
         }
     }
 }
