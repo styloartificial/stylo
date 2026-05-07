@@ -112,7 +112,12 @@ class BuildPromptHelper
 
             if (!empty($result['images'])) {
                 foreach ($result['images'] as $image) {
-                    $tempFileName = S3Helper::downloadToTemp($image);
+                    $response = Http::get($image);
+
+                    $extension = pathinfo(parse_url($image, PHP_URL_PATH), PATHINFO_EXTENSION);
+                    $tempFileName = (string) \Illuminate\Support\Str::uuid() . ($extension ? ".{$extension}" : '');
+
+                    \Illuminate\Support\Facades\Storage::disk('local')->put("temp/{$tempFileName}", $response->body());
 
                     $s3Path = S3Helper::storeFileToS3(
                         "scans/{$scan->ticket_id}/summary",
