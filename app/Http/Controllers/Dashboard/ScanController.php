@@ -17,6 +17,7 @@ use App\Http\Requests\CloseTicketRequest;
 use App\Http\Requests\ValidateImageByProfileGenderRequest;
 use App\Services\OpenAIService;
 use App\Models\ScanItemCategory;
+use App\Services\ByteplusService;
 
 class ScanController extends BaseController
 {
@@ -43,24 +44,13 @@ class ScanController extends BaseController
             }
 
             $tempFileName = S3Helper::storeFileTemp($file);
-
-            $prompt = "Look at this image carefully. Is the person in this image $gender? Answer with only the word true or false, nothing else. No explanation.";
-
-            $payload = [
-                'prompt' => $prompt,
-                'temp_images' => [$tempFileName],
-                'generate_images' => 0,
-                'plain_text' => true,
-            ];
-
-            $result = OpenAIService::run($payload);
-
-            $rawResult = strtolower(trim($result['analysis']['_raw'] ?? ''));
-            $isValid = str_contains($rawResult, 'true');
+            $prompt = 'Look at this image carefully. Is the person in this image $gender? Answer with only {"status": true_or_false}, nothing else. No explanation.';
+            
+            $result = ByteplusService::analyze($prompt, [$tempFileName]);
 
             S3Helper::removeFileTemp($tempFileName);
 
-            return $this->success($isValid);
+            return $this->success($result["status"]);
 
         } catch (\Throwable $e) {
             if (isset($tempFileName)) {
