@@ -44,9 +44,10 @@ class ScanController extends BaseController
             }
 
             $tempFileName = S3Helper::storeFileTemp($file);
+            $fileContent = S3Helper::storeFileToS3("temp", $tempFileName);
             $prompt = 'Look at this image carefully. Is the person in this image $gender? Answer with only {"status": true_or_false}, nothing else. No explanation.';
             
-            $result = ByteplusService::analyze($prompt, [$tempFileName]);
+            $result = ByteplusService::analyze($prompt, [$fileContent]);
 
             S3Helper::removeFileTemp($tempFileName);
 
