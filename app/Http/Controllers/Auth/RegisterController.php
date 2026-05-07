@@ -11,40 +11,17 @@ use App\Models\User;
 
 class RegisterController extends BaseController
 {
-    public function CheckEmail(CheckEmailRequest $request)
-    {
-        try {
-            $data = $request->validated();
-            return $this->success();
-        } catch (\Throwable $th) {
-            return $this->serverError($th);
-        }
-    }
-
-    public function GetSkinTone()
-    {
-        try {
-            $data = MSkinTone::all();
-            return $this->success($data);
-        } catch (\Throwable $th) {
-            return $this->serverError($th);
-        }
-    }
-
-    public function GetBodyShape()
-    {
-        try {
-            $data = MBodyShape::all();
-            return $this->success($data);
-        } catch (\Throwable $th) {
-            return $this->serverError($th);
-        }
-    }
-
     public function Register(RegisterRequest $request)
     {
         try {
             $data = $request->validated();
+
+            // Cek umur minimal 17 tahun
+            $age = \Carbon\Carbon::parse($data['date_of_birth'])->diffInYears(now());
+            if ($age < 17) {
+                return $this->clientError('Usia minimal untuk mendaftar adalah 17 tahun.');
+            }
+
             $data['password'] = bcrypt($data['password']);
 
             $newUser = User::create($data)->assignRole('user');
@@ -67,4 +44,5 @@ class RegisterController extends BaseController
             return $this->serverError($th);
         }
     }
+
 }

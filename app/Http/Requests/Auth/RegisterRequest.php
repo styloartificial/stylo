@@ -27,7 +27,7 @@ class RegisterRequest extends BaseRequest
             'email'         => ['required', 'string', 'email', 'unique:users,email'],
             'password'      => ['required', 'string', 'confirmed'],
             'gender'        => ['required', 'in:MALE,FEMALE'],
-            'date_of_birth' => ['required', 'date'],
+            'date_of_birth' => ['required', 'date', 'before_or_equal:' . now()->subYears(17)->format('Y-m-d')], // 👈 tambah ini
             'height'        => ['required', 'numeric'],
             'weight'        => ['required', 'numeric'],
             'skin_tone_id'  => ['required', 'exists:m_skin_tones,id'],
