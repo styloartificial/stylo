@@ -22,7 +22,7 @@ class ValidateImageByProfileGenderRequest extends BaseRequest
     public function rules(): array
     {
         return [
-            'img_url' => ['required', 'file', 'mimes:jpg,jpeg,png', 'max:2048'],
+            'img_url' => ['required', 'file', 'mimes:jpg,jpeg,png', 'max:20480'],
         ];
     }
 }
