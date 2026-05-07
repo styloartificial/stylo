@@ -112,17 +112,16 @@ class BuildPromptHelper
 
             if (!empty($result['images'])) {
                 foreach ($result['images'] as $image) {
-                    $tempImg = tempnam(sys_get_temp_dir(), 'summary_');
-                    $response = Http::get($image);
-                    file_put_contents($tempImg, $response->body());
+                    $tempFileName = S3Helper::downloadToTemp($image);
 
                     $s3Path = S3Helper::storeFileToS3(
                         "scans/{$scan->ticket_id}/summary",
-                        $tempImg
+                        $tempFileName
                     );
-                    
+
+                    S3Helper::removeFileTemp($tempFileName);
+
                     $summaryUrls[] = $s3Path;
-                    S3Helper::removeFileTemp($tempImg);
                 }
             }
 
