@@ -15,9 +15,9 @@ use App\Http\Requests\OpenTicketRequest;
 use App\Http\Requests\LogScrapProcessRequest;
 use App\Http\Requests\CloseTicketRequest;
 use App\Http\Requests\ValidateImageByProfileGenderRequest;
-use App\Services\OpenAIService;
 use App\Models\ScanItemCategory;
 use App\Services\ByteplusService;
+use App\Jobs\ProcessGetRecommendationStyle;
 
 class ScanController extends BaseController
 {
@@ -119,30 +119,7 @@ class ScanController extends BaseController
             ScanItemCategory::insert($scan_categories);
 
             FirebaseLogHelper::logTicketQueued($db, $ticketId);
-
-            $products = BuildPromptHelper::run($scan);
-            FirebaseLogHelper::logScrapPrepared($db, $ticketId);
-
-            $productsFormatted = collect($products)
-                ->map(function ($item) {
-                    return trim(
-                        ($item['brand'] ?? '') . ' ' .
-                        ($item['name'] ?? '') . ' ' .
-                        ($item['color'] ?? '')
-                    );
-                })
-                ->filter()
-                ->values()
-                ->toArray();
-
-            FirebaseLogHelper::logScrapQueued($db, $ticketId);
-
-            $db->getReference("ticket-request")->push([
-                'ticket_id'  => $ticketId,
-                'products'   => $productsFormatted,
-                'status'     => 'pending',
-                'created_at' => now()->toDateTimeString(),
-            ]);
+            ProcessGetRecommendationStyle::dispatch($scan->id, $ticketId)->afterResponse();
 
             return $this->success([
                 'ticket_id' => $ticketId
