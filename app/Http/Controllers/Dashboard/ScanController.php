@@ -45,6 +45,9 @@ class ScanController extends BaseController
 
             $tempFileName = S3Helper::storeFileTemp($file);
             $fileContent = S3Helper::storeFileToS3("temp", $tempFileName);
+
+            echo "File stored temporarily: {$tempFileName}\n";
+            echo "File content path: {$fileContent}\n";
             
             $prompt = "Look at this image carefully. Is the person in this image {$gender}? Answer with only {\"status\": true_or_false}, nothing else. No explanation.";
             $promptImage = [
