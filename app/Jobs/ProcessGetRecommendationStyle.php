@@ -11,6 +11,7 @@ use App\Models\Scan;
 use App\Services\FirebaseService;
 use App\Helpers\FirebaseLogHelper;
 use App\Helpers\BuildPromptHelper;
+use Illuminate\Support\Facades\Log;
 
 class ProcessGetRecommendationStyle implements ShouldQueue
 {
@@ -24,6 +25,7 @@ class ProcessGetRecommendationStyle implements ShouldQueue
 
     public function handle(): void
     {
+        Log::info("Run get recommendation style..");
         $scan = Scan::with('user.userDetail.skinTone', 'user.userDetail.bodyShape')
             ->findOrFail($this->scanId);
 
