@@ -119,7 +119,7 @@ class ScanController extends BaseController
             ScanItemCategory::insert($scan_categories);
 
             FirebaseLogHelper::logTicketQueued($db, $ticketId);
-            ProcessGetRecommendationStyle::dispatch($scan->id, $ticketId)->afterResponse();
+            ProcessGetRecommendationStyle::dispatch($scan->id, $ticketId);
 
             return $this->success([
                 'ticket_id' => $ticketId
