@@ -87,12 +87,6 @@ class ByteplusService
 
             $buffer .= $body->read(1024);
 
-            /*
-        |--------------------------------------------------------------------------
-        | Process only complete SSE events
-        |--------------------------------------------------------------------------
-        */
-
             while (($pos = strpos($buffer, "\n")) !== false) {
 
                 $line = substr($buffer, 0, $pos);
@@ -121,12 +115,6 @@ class ByteplusService
                     continue;
                 }
 
-                /*
-            |--------------------------------------------------------------------------
-            | Streaming delta text
-            |--------------------------------------------------------------------------
-            */
-
                 if (($json['type'] ?? null) === 'response.output_text.delta') {
 
                     $delta = $json['delta'] ?? '';
@@ -140,12 +128,6 @@ class ByteplusService
             throw new \Exception('Empty response from BytePlus');
         }
 
-        /*
-    |--------------------------------------------------------------------------
-    | Clean markdown wrappers
-    |--------------------------------------------------------------------------
-    */
-
         $fullText = trim($fullText);
 
         $fullText = preg_replace('/^```json\s*/i', '', $fullText);
@@ -153,12 +135,6 @@ class ByteplusService
         $fullText = preg_replace('/\s*```$/i', '', $fullText);
 
         $fullText = trim($fullText);
-
-        /*
-    |--------------------------------------------------------------------------
-    | Extract JSON object only
-    |--------------------------------------------------------------------------
-    */
 
         preg_match('/\{(?:[^{}]|(?R))*\}/s', $fullText, $matches);
 
@@ -169,12 +145,6 @@ class ByteplusService
                 "No JSON object found.\n\nRaw:\n" . $fullText
             );
         }
-
-        /*
-    |--------------------------------------------------------------------------
-    | Remove invalid control chars
-    |--------------------------------------------------------------------------
-    */
 
         $jsonString = preg_replace('/[\x00-\x1F\x7F]/u', '', $jsonString);
 
@@ -200,19 +170,20 @@ class ByteplusService
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',
             'Authorization' => "Bearer $apiKey",
-        ])->post('https://ark.ap-southeast.bytepluses.com/api/v3/images/generations', [
-            'model' => 'seedream-4-0-250828',
-            'prompt' => $prompt,
-            'image' => $imageUrl,
-            'sequential_image_generation' => 'auto',
-            'sequential_image_generation_options' => [
-                'max_images' => $count,
-            ],
-            'response_format' => 'url',
-            'size' => '2K',
-            'stream' => false,
-            'watermark' => false,
-        ]);
+        ])->timeout(180)->connectTimeout(30)->retry(3, 3000, throw: false)
+            ->post('https://ark.ap-southeast.bytepluses.com/api/v3/images/generations', [
+                'model' => 'seedream-4-0-250828',
+                'prompt' => $prompt,
+                'image' => $imageUrl,
+                'sequential_image_generation' => 'auto',
+                'sequential_image_generation_options' => [
+                    'max_images' => $count,
+                ],
+                'response_format' => 'url',
+                'size' => '2K',
+                'stream' => false,
+                'watermark' => false,
+            ]);
 
         $data = $response->json('data');
         return collect($data)->pluck('url')->values()->toArray();
