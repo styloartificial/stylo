@@ -17,6 +17,8 @@ class ProcessGetRecommendationStyle implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    public int $tries = 1;
+    
     public function __construct(
         public int $scanId,
         public string $ticketId
