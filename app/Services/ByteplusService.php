@@ -3,20 +3,48 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class ByteplusService
 {
-    public static function run(string $prompt, array $imagesUrl = [], int $generateImages = 1): array
-    {
+    private const BASE_URL = 'https://ark.ap-southeast.bytepluses.com/api/v3';
 
-        if (!$prompt) {
+    private const ANALYZE_MODEL = 'seed-2-0-lite-260228';
+
+    private const IMAGE_MODEL = 'seedream-4-0-250828';
+
+    public static function run(
+        string $prompt,
+        array $imagesUrl = [],
+        int $generateImages = 1
+    ): array {
+
+        if (blank($prompt)) {
             throw new \InvalidArgumentException('Prompt is required');
+        }
+
+        if (empty($imagesUrl)) {
+            throw new \InvalidArgumentException('At least one image is required');
         }
 
         $analysis = self::analyze($prompt, $imagesUrl);
 
-        $promptForImageGen = "Edit foto orang ini berdasarkan summary berikut dan hasilkan 3 foto dengan pose gerakan yang berbeda. " . ($analysis['summary'] ?? '');
-        $images = self::generateImages($promptForImageGen, $imagesUrl[0], $generateImages);
+        $summary = data_get($analysis, 'summary', '');
+
+        $imagePrompt = <<<PROMPT
+Edit foto orang ini berdasarkan summary berikut.
+
+{$summary}
+
+Hasilkan {$generateImages} foto dengan pose berbeda,
+tetap realistis, fashionable, dan konsisten dengan wajah asli.
+PROMPT;
+
+        $images = self::generateImages(
+            prompt: $imagePrompt,
+            imageUrl: $imagesUrl[0],
+            count: $generateImages
+        );
 
         return [
             'analysis' => $analysis,
@@ -24,9 +52,10 @@ class ByteplusService
         ];
     }
 
-    public static function analyze(string $prompt, array $imagesUrl): array
-    {
-        $apiKey = config('services.openai.key');
+    public static function analyze(
+        string $prompt,
+        array $imagesUrl
+    ): array {
 
         $content = [
             [
@@ -42,150 +71,130 @@ class ByteplusService
             ];
         }
 
-        $response = Http::withHeaders([
-            'Authorization' => "Bearer {$apiKey}",
-            'Content-Type' => 'application/json',
-            'ark-beta-mcp' => 'true',
-        ])
-            ->withOptions([
-                'stream' => true,
-            ])
-            ->post(
-                'https://ark.ap-southeast.bytepluses.com/api/v3/responses',
-                [
-                    'model' => 'seed-2-0-lite-260228',
-                    'stream' => true,
-                    'tools' => [
-                        [
-                            'type' => 'mcp',
-                            'server_label' => 'deepwiki',
-                            'server_url' => 'https://mcp.deepwiki.com/mcp',
-                            'require_approval' => 'never',
-                        ]
-                    ],
-                    'input' => [
-                        [
-                            'role' => 'user',
-                            'content' => $content,
-                        ]
+        $response = self::http()
+            ->timeout(180)
+            ->post('/responses', [
+                'model' => self::ANALYZE_MODEL,
+
+                // STREAM OFF = lebih stabil
+                'stream' => false,
+
+                'input' => [
+                    [
+                        'role' => 'user',
+                        'content' => $content,
                     ]
                 ]
-            );
+            ]);
 
         if (!$response->successful()) {
-            throw new \Exception(
-                'BytePlus API Error: ' . $response->body()
+
+            Log::error('BytePlus Analyze Error', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            throw new \Exception('BytePlus analyze failed');
+        }
+
+        $text = data_get($response->json(), 'output.0.content.0.text');
+
+        if (!$text) {
+            throw new \Exception('Empty analyze response');
+        }
+
+        return self::extractJson($text);
+    }
+
+    public static function generateImages(
+        string $prompt,
+        string $imageUrl,
+        int $count = 1
+    ): array {
+
+        $response = self::http()
+            ->timeout(300)
+            ->post('/images/generations', [
+                'model' => self::IMAGE_MODEL,
+                'prompt' => $prompt,
+                'image' => $imageUrl,
+
+                'sequential_image_generation' => 'auto',
+
+                'sequential_image_generation_options' => [
+                    'max_images' => $count,
+                ],
+
+                'response_format' => 'url',
+
+                'size' => '2K',
+
+                'stream' => false,
+
+                'watermark' => false,
+            ]);
+
+        if (!$response->successful()) {
+
+            Log::error('BytePlus Image Error', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            throw new \Exception('Generate image failed');
+        }
+
+        return collect($response->json('data'))
+            ->pluck('url')
+            ->filter()
+            ->values()
+            ->toArray();
+    }
+
+    private static function http()
+    {
+        return Http::baseUrl(self::BASE_URL)
+            ->acceptJson()
+            ->contentType('application/json')
+            ->withToken(config('services.openai.key'))
+            ->connectTimeout(30)
+            ->retry(
+                3,
+                3000,
+                function ($exception) {
+                    return true;
+                },
+                throw: false
             );
+    }
+
+    private static function extractJson(string $text): array
+    {
+        $text = trim($text);
+
+        $text = preg_replace('/^```json/i', '', $text);
+        $text = preg_replace('/^```/', '', $text);
+        $text = preg_replace('/```$/', '', $text);
+
+        $text = trim($text);
+
+        preg_match('/\{(?:[^{}]|(?R))*\}/s', $text, $matches);
+
+        $json = $matches[0] ?? null;
+
+        if (!$json) {
+            throw new \Exception('No JSON found');
         }
 
-        $body = $response->toPsrResponse()->getBody();
-
-        $buffer = '';
-        $fullText = '';
-
-        while (!$body->eof()) {
-
-            $buffer .= $body->read(1024);
-
-            while (($pos = strpos($buffer, "\n")) !== false) {
-
-                $line = substr($buffer, 0, $pos);
-
-                $buffer = substr($buffer, $pos + 1);
-
-                $line = trim($line);
-
-                if (empty($line)) {
-                    continue;
-                }
-
-                if (!str_starts_with($line, 'data:')) {
-                    continue;
-                }
-
-                $payload = trim(substr($line, 5));
-
-                if ($payload === '[DONE]') {
-                    continue;
-                }
-
-                $json = json_decode($payload, true);
-
-                if (!$json) {
-                    continue;
-                }
-
-                if (($json['type'] ?? null) === 'response.output_text.delta') {
-
-                    $delta = $json['delta'] ?? '';
-
-                    $fullText .= $delta;
-                }
-            }
-        }
-
-        if (empty($fullText)) {
-            throw new \Exception('Empty response from BytePlus');
-        }
-
-        $fullText = trim($fullText);
-
-        $fullText = preg_replace('/^```json\s*/i', '', $fullText);
-        $fullText = preg_replace('/^```\s*/i', '', $fullText);
-        $fullText = preg_replace('/\s*```$/i', '', $fullText);
-
-        $fullText = trim($fullText);
-
-        preg_match('/\{(?:[^{}]|(?R))*\}/s', $fullText, $matches);
-
-        $jsonString = $matches[0] ?? null;
-
-        if (!$jsonString) {
-            throw new \Exception(
-                "No JSON object found.\n\nRaw:\n" . $fullText
-            );
-        }
-
-        $jsonString = preg_replace('/[\x00-\x1F\x7F]/u', '', $jsonString);
-
-        $decoded = json_decode($jsonString, true);
+        $decoded = json_decode($json, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
 
             throw new \Exception(
-                'Invalid JSON response: '
-                    . json_last_error_msg()
-                    . "\n\nRaw JSON:\n"
-                    . $jsonString
+                json_last_error_msg()
             );
         }
 
         return $decoded;
-    }
-
-    public static function generateImages(string $prompt, string $imageUrl, int $count): array
-    {
-        $apiKey = config('services.openai.key');
-
-        $response = Http::withHeaders([
-            'Content-Type' => 'application/json',
-            'Authorization' => "Bearer $apiKey",
-        ])->timeout(180)->connectTimeout(30)->retry(3, 3000, throw: false)
-            ->post('https://ark.ap-southeast.bytepluses.com/api/v3/images/generations', [
-                'model' => 'seedream-4-0-250828',
-                'prompt' => $prompt,
-                'image' => $imageUrl,
-                'sequential_image_generation' => 'auto',
-                'sequential_image_generation_options' => [
-                    'max_images' => $count,
-                ],
-                'response_format' => 'url',
-                'size' => '2K',
-                'stream' => false,
-                'watermark' => false,
-            ]);
-
-        $data = $response->json('data');
-        return collect($data)->pluck('url')->values()->toArray();
     }
 }
