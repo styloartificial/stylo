@@ -87,6 +87,8 @@ class BuildPromptHelper
         }
         ";
 
+        \Illuminate\Support\Facades\Log::info("prompt: {$prompt}");
+
         $imagesUrl = [
             $scan->img_url,
             $userDetail->img_url ?? null,
