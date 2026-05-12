@@ -62,37 +62,53 @@ class BuildPromptHelper
         $outfitDetail = $scan->outfit_detail ?? null;
 
         $prompt = "
-        Berdasarkan foto orang ini, analisa outfit dan buatkan rekomendasi outfit yang sesuai.
+            Kamu adalah AI fashion stylist. Saya akan memberikan foto seseorang beserta preferensi outfit mereka.
 
-        Profil pengguna:
-        - Gender: $userGender
-        - Tinggi: $userHeight cm
-        - Berat: $userWeight kg
-        - Skin tone: $userSkinTone
-        - Body shape: $userBodyShape
+            TUGASMU:
+            1. Lihat foto orang ini dengan detail (wajah, postur, ukuran tubuh, warna kulit)
+            2. Buat rekomendasi outfit BARU yang menggantikan outfit yang sedang dipakai
+            3. Outfit baru harus sesuai dengan kategori dan preferensi yang dipilih
+            4. Generate gambar orang yang SAMA dengan outfit baru (wajah, postur, ukuran TIDAK BOLEH berubah, hanya outfit yang diganti)
 
-        Preferensi outfit:
-        " . (!empty($scanCategoryItems)   ? "- Item yang difokuskan: $scanCategoryItems\n"   : "") .
-        (!empty($scanCategoryOccasion) ? "- Acara/occasion: $scanCategoryOccasion\n"       : "") .
-        (!empty($scanCategoryStyle)    ? "- Gaya/style yang diinginkan: $scanCategoryStyle\n" : "") .
-        (!empty($scanCategoryHijab)    ? "- Pilihan hijab: $scanCategoryHijab\n"            : "") .
-        ($outfitDetail                 ? "- Detail tambahan dari user: $outfitDetail\n"     : "") . "
-        Gunakan semua informasi di atas untuk menghasilkan rekomendasi yang personal dan relevan.
+            Profil pengguna:
+            - Gender: $userGender
+            - Tinggi: $userHeight cm
+            - Berat: $userWeight kg
+            - Skin tone: $userSkinTone
+            - Body shape: $userBodyShape
 
-        WAJIB ikuti format JSON ini tanpa tambahan teks lain:
+            Kategori outfit yang WAJIB diterapkan:
+            " . (!empty($scanCategoryItems)   ? "- Item yang HARUS diganti/difokuskan: $scanCategoryItems\n"        : "") .
+            (!empty($scanCategoryOccasion) ? "- Outfit HARUS cocok untuk acara: $scanCategoryOccasion\n"          : "") .
+            (!empty($scanCategoryStyle)    ? "- Gaya/style yang WAJIB diterapkan: $scanCategoryStyle\n"           : "") .
+            (!empty($scanCategoryHijab)    ? "- Pilihan hijab yang dipakai: $scanCategoryHijab\n"                 : "") .
+            ($outfitDetail                 ? "- Permintaan spesifik dari user: $outfitDetail\n"                   : "") . "
 
-        {
-            \"summary\": \"string (penjelasan outfit lengkap dalam 1 paragraf, sebutkan item spesifik yang direkomendasikan)\",
-            \"title\": \"string (judul singkat untuk outfit ini, didapat dari rangkuman summary)\",
-            \"products\": [
-                {
-                \"name\": \"string (nama produk spesifik)\",
-                \"brand\": \"string (brand yang direkomendasikan)\",
-                \"category\": \"string (kategori produk)\"
-                }
-            ]
-        }
-        ";
+            ATURAN PENTING untuk gambar yang di-generate:
+            - Wajah orang TIDAK BOLEH berubah
+            - Postur dan ukuran tubuh TIDAK BOLEH berubah  
+            - Background TIDAK BOLEH berubah
+            - Ukuran dan layout foto TIDAK BOLEH berubah
+            - HANYA outfit/pakaian yang boleh berubah sesuai kategori di atas
+            - Jika item yang dipilih adalah 'Atasan' maka HANYA atasan yang diganti
+            - Jika item yang dipilih adalah 'Bawahan' maka HANYA bawahan yang diganti
+            - Jika item yang dipilih adalah 'Outer' maka tambahkan outer di atas outfit yang ada
+            - Warna outfit yang direkomendasikan harus cocok dengan skin tone $userSkinTone
+
+            WAJIB ikuti format JSON ini tanpa tambahan teks lain:
+
+            {
+                \"summary\": \"string (jelaskan outfit baru yang direkomendasikan secara detail: item apa yang diganti, warna, bahan, dan alasan kenapa cocok untuk $userGender dengan body shape $userBodyShape dan acara/style yang dipilih)\",
+                \"title\": \"string (judul singkat outfit rekomendasi, contoh: 'Casual Minimalist Work Look')\",
+                \"products\": [
+                    {
+                        \"name\": \"string (nama produk spesifik yang direkomendasikan sesuai item yang dipilih)\",
+                        \"brand\": \"string (brand fashion yang relevan)\",
+                        \"category\": \"string (harus salah satu dari: $scanCategoryItems)\"
+                    }
+                ]
+            }
+            ";
 
         \Illuminate\Support\Facades\Log::info("prompt: {$prompt}");
 
