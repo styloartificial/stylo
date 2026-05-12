@@ -62,28 +62,35 @@ class BuildPromptHelper
         $outfitDetail = $scan->outfit_detail ?? null;
 
         $prompt = "
-        Berdasarkan foto orang ini, analisa outfit dan buatkan rekomendasi.
+        Berdasarkan foto orang ini, analisa outfit dan buatkan rekomendasi outfit yang sesuai.
 
-        Detail:
+        Profil pengguna:
         - Gender: $userGender
         - Tinggi: $userHeight cm
         - Berat: $userWeight kg
         - Skin tone: $userSkinTone
         - Body shape: $userBodyShape
-        - Preferensi: $promptCategoryText
-        " . ($outfitDetail ? "- Detail tambahan dari user: $outfitDetail\n" : "") . "
+
+        Preferensi outfit:
+        " . (!empty($scanCategoryItems)   ? "- Item yang difokuskan: $scanCategoryItems\n"   : "") .
+        (!empty($scanCategoryOccasion) ? "- Acara/occasion: $scanCategoryOccasion\n"       : "") .
+        (!empty($scanCategoryStyle)    ? "- Gaya/style yang diinginkan: $scanCategoryStyle\n" : "") .
+        (!empty($scanCategoryHijab)    ? "- Pilihan hijab: $scanCategoryHijab\n"            : "") .
+        ($outfitDetail                 ? "- Detail tambahan dari user: $outfitDetail\n"     : "") . "
+        Gunakan semua informasi di atas untuk menghasilkan rekomendasi yang personal dan relevan.
+
         WAJIB ikuti format JSON ini tanpa tambahan teks lain:
 
         {
-        \"summary\": \"string (penjelasan outfit lengkap dalam 1 paragraf)\",
-        \"title\": \"string (judul singkat untuk outfit ini. Didapat dari rangkuman summary)\",
-        \"products\": [
-            {
-            \"name\": \"string\",
-            \"brand\": \"string\",
-            \"category\": \"string\"
-            }
-        ]
+            \"summary\": \"string (penjelasan outfit lengkap dalam 1 paragraf, sebutkan item spesifik yang direkomendasikan)\",
+            \"title\": \"string (judul singkat untuk outfit ini, didapat dari rangkuman summary)\",
+            \"products\": [
+                {
+                \"name\": \"string (nama produk spesifik)\",
+                \"brand\": \"string (brand yang direkomendasikan)\",
+                \"category\": \"string (kategori produk)\"
+                }
+            ]
         }
         ";
 
