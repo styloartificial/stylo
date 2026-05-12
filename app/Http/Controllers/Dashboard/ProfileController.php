@@ -75,22 +75,28 @@ class ProfileController extends BaseController
     {
         try {
             $user = $request->user();
-            $user->load('userDetail.skinTone');
+            $user->load('userDetail.skinTone', 'userDetail.bodyShape'); // 👈 tambah bodyShape
 
             $data = [
                 'user_id'    => $user->id,
                 'email'      => $user->email,
                 'name'       => $user->name,
                 'userDetail' => [
-                    'img_url'      => $this->normalizeSupabasePublicUrl($user->userDetail?->img_url),
-                    'gender'       => $user->userDetail?->gender,
-                    'height'       => $user->userDetail?->height,
-                    'weight'       => $user->userDetail?->weight,
-                    'skin_tone_id' => $user->userDetail?->skin_tone_id,
-                    'skin_tone'    => $user->userDetail?->skinTone ? [
+                    'img_url'       => $this->normalizeSupabasePublicUrl($user->userDetail?->img_url),
+                    'gender'        => $user->userDetail?->gender,
+                    'height'        => $user->userDetail?->height,
+                    'weight'        => $user->userDetail?->weight,
+                    'skin_tone_id'  => $user->userDetail?->skin_tone_id,
+                    'skin_tone'     => $user->userDetail?->skinTone ? [
                         'id'          => $user->userDetail->skinTone->id,
                         'name'        => $user->userDetail->skinTone->title,
                         'description' => $user->userDetail->skinTone->description,
+                    ] : null,
+                    'body_shape_id' => $user->userDetail?->body_shape_id, 
+                    'body_shape'    => $user->userDetail?->bodyShape ? [  
+                        'id'          => $user->userDetail->bodyShape->id,
+                        'title'       => $user->userDetail->bodyShape->title,
+                        'description' => $user->userDetail->bodyShape->description,
                     ] : null,
                 ],
             ];
@@ -154,7 +160,7 @@ class ProfileController extends BaseController
                 );
             }
 
-            $user->load('userDetail.skinTone');
+            $user->load('userDetail.skinTone', 'userDetail.bodyShape');
 
             $data = [
                 'user_id'    => $user->id,
@@ -170,6 +176,12 @@ class ProfileController extends BaseController
                         'id'          => $user->userDetail->skinTone->id,
                         'name'        => $user->userDetail->skinTone->title,
                         'description' => $user->userDetail->skinTone->description,
+                    ] : null,
+                    'body_shape_id' => $user->userDetail?->body_shape_id,
+                    'body_shape'    => $user->userDetail?->bodyShape ? [
+                        'id'          => $user->userDetail->bodyShape->id,
+                        'title'       => $user->userDetail->bodyShape->title,
+                        'description' => $user->userDetail->bodyShape->description,
                     ] : null,
                 ],
             ];
