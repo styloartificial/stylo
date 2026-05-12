@@ -41,7 +41,13 @@ class BuildPromptHelper
             ? "{$userDetail->bodyShape->title} ({$userDetail->bodyShape->description})"
             : "tidak diketahui";
 
-        $scanCategories = collect($scan->categories);
+        $scanCategories = $scan->scanItemCategories()->with('itemCategory')->get()->map(function ($item) {
+            return (object)[
+                'type'  => $item->type,
+                'title' => $item->itemCategory->title ?? '',
+            ];
+        });
+        
 
         $scanCategoryItems   = $scanCategories->where('type', 'item')->pluck('title')->implode(', ');
         $scanCategoryOccasion = $scanCategories->where('type', 'occasion')->pluck('title')->implode(', ');
@@ -50,6 +56,12 @@ class BuildPromptHelper
             ? null
             : $scanCategories->where('type', 'hijab')->pluck('title')->implode(', ');
 
+        \Illuminate\Support\Facades\Log::info("=== SCAN CATEGORIES ===", [
+            'items'    => $scanCategoryItems,
+            'occasion' => $scanCategoryOccasion,
+            'style'    => $scanCategoryStyle,
+            'hijab'    => $scanCategoryHijab,
+        ]);
         $promptParts = [];
 
         if (!empty($scanCategoryItems))   $promptParts[] = "item: $scanCategoryItems";
