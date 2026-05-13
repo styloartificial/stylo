@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('scan_id')->constrained('scans')->onDelete('cascade');
             $table->boolean('is_partial')->default(false);
-            $table->string('img_url')->nullable();
+            $table->text('img_url')->nullable();
             $table->string('product_name')->nullable();
             $table->float('price')->nullable();
             $table->float('rating')->nullable();
