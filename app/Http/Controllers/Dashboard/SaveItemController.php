@@ -66,7 +66,6 @@ class SaveItemController extends BaseController
             }
 
             return $this->success(null);
-
         } catch (\Throwable $th) {
             return $this->serverError($th);
         }
@@ -122,12 +121,16 @@ class SaveItemController extends BaseController
             // STEP 3 — Ambil data
             $scans = Scan::where('user_id', $userId)
                 ->whereHas('scanSaves', function ($q) use ($isPartial) {
-                    $q->where('is_partial', $isPartial ? true : false);
+                    $q->whereRaw(
+                        'is_partial IS ' . ($isPartial ? 'TRUE' : 'FALSE')
+                    );
                 })
                 ->with([
                     'scanResult',
                     'scanSaves' => function ($q) use ($isPartial) {
-                        $q->where('is_partial', $isPartial ? true : false);
+                        $q->whereRaw(
+                            'is_partial IS ' . ($isPartial ? 'TRUE' : 'FALSE')
+                        );
                     },
                 ])
                 // ✅ Filter tanggal kalau from_date & to_date diisi
@@ -170,7 +173,6 @@ class SaveItemController extends BaseController
 
             // STEP 5 — Return data
             return $this->success($scans);
-
         } catch (\Throwable $th) {
             return $this->serverError($th);
         }
