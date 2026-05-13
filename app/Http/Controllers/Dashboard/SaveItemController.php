@@ -79,6 +79,7 @@ class SaveItemController extends BaseController
             if (!$request->has('is_partial') || !in_array($request->query('is_partial'), ['0', '1'])) {
                 return $this->clientError('Parameter is_partial wajib diisi (0 atau 1).');
             }
+            echo "is_partial (raw): " . $request->query('is_partial') . "\n";
 
             $isPartial = $request->query('is_partial') === '1';
             $isPartial = (bool) $isPartial;
