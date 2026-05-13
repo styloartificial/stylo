@@ -12,6 +12,11 @@ class ByteplusService
         if (!$prompt) {
             throw new \InvalidArgumentException('Prompt is required');
         }
+        \Illuminate\Support\Facades\Log::info("Payload to BytePlusService", [
+            'prompt' => $prompt,
+            'images_url' => $imagesUrl,
+            'generate_images' => $generateImages,
+        ]);
 
         $analysis = self::analyze($prompt, $imagesUrl);
 
