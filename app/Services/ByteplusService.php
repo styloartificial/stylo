@@ -55,24 +55,15 @@ class ByteplusService
         $response = Http::withHeaders([
             'Authorization' => "Bearer {$apiKey}",
             'Content-Type' => 'application/json',
-            'ark-beta-mcp' => 'true',
         ])
-            ->withOptions([
-                'stream' => true,
-            ])
+            ->timeout(120)
+            ->connectTimeout(30)
+            ->retry(3, 5000, throw: false)
             ->post(
                 'https://ark.ap-southeast.bytepluses.com/api/v3/responses',
                 [
                     'model' => 'seed-2-0-lite-260228',
-                    'stream' => true,
-                    'tools' => [
-                        [
-                            'type' => 'mcp',
-                            'server_label' => 'deepwiki',
-                            'server_url' => 'https://mcp.deepwiki.com/mcp',
-                            'require_approval' => 'never',
-                        ]
-                    ],
+                    'stream' => false,
                     'input' => [
                         [
                             'role' => 'user',
@@ -88,80 +79,47 @@ class ByteplusService
             );
         }
 
-        $body = $response->toPsrResponse()->getBody();
-
-        $buffer = '';
+        // Extract text from output[*].content[*].text (type: output_text)
         $fullText = '';
+        $outputs = $response->json('output') ?? [];
 
-        while (!$body->eof()) {
-
-            $buffer .= $body->read(1024);
-
-            while (($pos = strpos($buffer, "\n")) !== false) {
-
-                $line = substr($buffer, 0, $pos);
-
-                $buffer = substr($buffer, $pos + 1);
-
-                $line = trim($line);
-
-                if (empty($line)) {
-                    continue;
-                }
-
-                if (!str_starts_with($line, 'data:')) {
-                    continue;
-                }
-
-                $payload = trim(substr($line, 5));
-
-                if ($payload === '[DONE]') {
-                    continue;
-                }
-
-                $json = json_decode($payload, true);
-
-                if (!$json) {
-                    continue;
-                }
-
-                if (($json['type'] ?? null) === 'response.output_text.delta') {
-
-                    $delta = $json['delta'] ?? '';
-
-                    $fullText .= $delta;
+        foreach ($outputs as $output) {
+            foreach ($output['content'] ?? [] as $part) {
+                if (($part['type'] ?? '') === 'output_text') {
+                    $fullText .= ($part['text'] ?? '');
                 }
             }
         }
 
         if (empty($fullText)) {
-            throw new \Exception('Empty response from BytePlus');
+            throw new \Exception('Empty response from BytePlus. Body: ' . $response->body());
         }
 
         $fullText = trim($fullText);
 
-        $fullText = preg_replace('/^```json\s*/i', '', $fullText);
-        $fullText = preg_replace('/^```\s*/i', '', $fullText);
+        // Strip markdown code fences
+        $fullText = preg_replace('/^```(?:json)?\s*/i', '', $fullText);
         $fullText = preg_replace('/\s*```$/i', '', $fullText);
-
         $fullText = trim($fullText);
 
-        preg_match('/\{(?:[^{}]|(?R))*\}/s', $fullText, $matches);
+        // Extract outermost JSON object
+        $start = strpos($fullText, '{');
+        $end = strrpos($fullText, '}');
 
-        $jsonString = $matches[0] ?? null;
-
-        if (!$jsonString) {
+        if ($start === false || $end === false || $end <= $start) {
             throw new \Exception(
                 "No JSON object found.\n\nRaw:\n" . $fullText
             );
         }
 
-        $jsonString = preg_replace('/[\x00-\x1F\x7F]/u', '', $jsonString);
+        $jsonString = substr($fullText, $start, $end - $start + 1);
+
+        // Remove non-printable control characters (preserve \t \n \r)
+        $jsonString = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $jsonString);
 
         $decoded = json_decode($jsonString, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-
             throw new \Exception(
                 'Invalid JSON response: '
                     . json_last_error_msg()
