@@ -182,7 +182,7 @@ class ByteplusService
             'Authorization' => "Bearer $apiKey",
         ])->timeout(180)->connectTimeout(30)->retry(3, 3000, throw: false)
             ->post('https://ark.ap-southeast.bytepluses.com/api/v3/images/generations', [
-                'model' => 'seedream-4-0-250828',
+                'model' => 'seedream-4-5-251128',
                 'prompt' => $prompt,
                 'image' => $imageUrl,
                 'sequential_image_generation' => 'auto',
