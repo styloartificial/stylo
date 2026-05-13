@@ -21,6 +21,7 @@ class ScanSave extends Model
         'price' => 'float',
         'rating' => 'float',
         'count_purchase' => 'integer',
+        'is_partial' => 'boolean',
     ];
 
     public function scan()

@@ -11,6 +11,7 @@ use App\Services\FirebaseService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SaveItemController extends BaseController
 {
@@ -45,18 +46,13 @@ class SaveItemController extends BaseController
                 return $this->clientError('Scan tidak ditemukan.');
             }
 
-            // STEP 3 — Simpan ke scan_saves per item
-            $isPartial = filter_var($request->input('is_partial'), FILTER_VALIDATE_BOOLEAN); // ← harus di sini, sebelum foreach
-            dd([
-                'is_partial_raw'      => $request->input('is_partial'),
-                'is_partial_filtered' => $isPartial,
-                'type_filtered'       => gettype($isPartial),
-            ]);
+            $isPartial = $request->input('is_partial') === '1';
+
             foreach ($validated['items'] as $item) {
                 ScanSave::create([
                     'scan_id'        => $scan->id,
                     'img_url'        => $item['img_url'],
-                    'is_partial'     => $isPartial,
+                    'is_partial'     => DB::raw($isPartial ? 'TRUE' : 'FALSE'),
                     'product_name'   => $item['product_name'],
                     'price'          => $item['price'] ?? null,
                     'rating'         => $item['rating'] ?? null,
