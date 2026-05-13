@@ -20,7 +20,7 @@ return new class extends Migration
             $table->float('price')->nullable();
             $table->float('rating')->nullable();
             $table->integer('count_purchase')->nullable();
-            $table->string('product_url')->nullable();
+            $table->text('product_url')->nullable();
             $table->timestamps();
         });
     }
