@@ -18,6 +18,11 @@ class ByteplusService
         $promptForImageGen = "Edit foto orang ini berdasarkan summary berikut dan hasilkan 3 foto dengan pose gerakan yang berbeda. " . ($analysis['summary'] ?? '');
         $images = self::generateImages($promptForImageGen, $imagesUrl[0], $generateImages);
 
+        Illuminate\Support\Facades\Log::info("BytePlusService result: " . json_encode([
+            'analysis' => $analysis,
+            'images' => $images,
+        ]));
+
         return [
             'analysis' => $analysis,
             'images' => $images,
