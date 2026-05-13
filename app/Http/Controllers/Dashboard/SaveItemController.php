@@ -81,6 +81,8 @@ class SaveItemController extends BaseController
             }
 
             $isPartial = $request->query('is_partial') === '1';
+            $isPartial = (bool) $isPartial;
+            echo "is_partial: $isPartial";
             $userId    = $request->user()->id;
 
             // STEP 2 — Validasi from_date & to_date
