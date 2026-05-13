@@ -119,19 +119,15 @@ class SaveItemController extends BaseController
                 }
             }
 
-            return $this->success([
-                'scan_save' => ScanSave::all()
-            ]);
-
             // STEP 3 — Ambil data
             $scans = Scan::where('user_id', $userId)
                 ->whereHas('scanSaves', function ($q) use ($isPartial) {
-                    $q->where('is_partial', $isPartial);
+                    $q->where('is_partial', $isPartial ? true : false);
                 })
                 ->with([
                     'scanResult',
                     'scanSaves' => function ($q) use ($isPartial) {
-                        $q->where('is_partial', $isPartial);
+                        $q->where('is_partial', $isPartial ? true : false);
                     },
                 ])
                 // ✅ Filter tanggal kalau from_date & to_date diisi
