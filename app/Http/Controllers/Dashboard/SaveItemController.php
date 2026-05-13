@@ -47,7 +47,11 @@ class SaveItemController extends BaseController
 
             // STEP 3 — Simpan ke scan_saves per item
             $isPartial = filter_var($request->input('is_partial'), FILTER_VALIDATE_BOOLEAN); // ← harus di sini, sebelum foreach
-
+            dd([
+                'is_partial_raw'      => $request->input('is_partial'),
+                'is_partial_filtered' => $isPartial,
+                'type_filtered'       => gettype($isPartial),
+            ]);
             foreach ($validated['items'] as $item) {
                 ScanSave::create([
                     'scan_id'        => $scan->id,
