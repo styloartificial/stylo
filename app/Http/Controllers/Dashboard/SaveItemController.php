@@ -81,13 +81,7 @@ class SaveItemController extends BaseController
             }
 
             $isPartial = $request->query('is_partial') === '1';
-            $isPartial = (bool) $isPartial;
-            if ($isPartial) {
-                $isPartial = true;
-            } else {
-                $isPartial = false;
-            }
-            echo "is_partial: $isPartial";
+            
             $userId    = $request->user()->id;
 
             // STEP 2 — Validasi from_date & to_date
@@ -128,12 +122,12 @@ class SaveItemController extends BaseController
             // STEP 3 — Ambil data
             $scans = Scan::where('user_id', $userId)
                 ->whereHas('scanSaves', function ($q) use ($isPartial) {
-                    $q->where('is_partial', $isPartial);
+                    $q->where('is_partial', $isPartial ? true : false);
                 })
                 ->with([
                     'scanResult',
                     'scanSaves' => function ($q) use ($isPartial) {
-                        $q->where('is_partial', $isPartial);
+                        $q->where('is_partial', $isPartial ? true : false);
                     },
                 ])
                 // ✅ Filter tanggal kalau from_date & to_date diisi
