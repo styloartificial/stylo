@@ -50,7 +50,7 @@ class SaveItemController extends BaseController
                 ScanSave::create([
                     'scan_id'        => $scan->id,
                     'img_url'        => $item['img_url'],
-                    'is_partial'     => $validated['is_partial'],
+                    'is_partial'     => (bool) $validated['is_partial'],
                     'product_name'   => $item['product_name'],
                     'price'          => $item['price'] ?? null,
                     'rating'         => $item['rating'] ?? null,
