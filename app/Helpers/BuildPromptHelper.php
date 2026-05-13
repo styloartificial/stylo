@@ -105,6 +105,10 @@ class BuildPromptHelper
             - Jika item yang dipilih adalah 'Atasan' maka HANYA atasan yang diganti
             - Jika item yang dipilih adalah 'Bawahan' maka HANYA bawahan yang diganti
             - Jika item yang dipilih adalah 'Outer' maka tambahkan outer di atas outfit yang ada
+            - Jika item yang dipilih adalah 'Hijab' maka tambahkan hijab di atas outfit yang ada
+            - Jika user memilih dua kategori misal atasan dan bawahan, maka ganti item yang dipilih
+            - Ambil semua produk yang direkomendasikan sesuai item yang dipilih 
+            - kalau memilih hijab ya tampilkan juga hijab yang direkomendasikan begitu pula dengan kategori lain
             - Warna outfit yang direkomendasikan harus cocok dengan skin tone $userSkinTone
 
             WAJIB ikuti format JSON ini tanpa tambahan teks lain:
