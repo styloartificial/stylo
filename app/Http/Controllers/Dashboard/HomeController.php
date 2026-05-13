@@ -26,12 +26,16 @@ class HomeController extends BaseController
             if ($type === 'outfits') {
                 $scans = Scan::where('user_id', $userId)
                     ->whereHas('scanSaves', function ($q) {
-                        $q->where('is_partial', false);
+                        $q->whereRaw(
+                            'is_partial IS ' . 'FALSE'
+                        );
                     })
                     ->with([
                         'scanResult',
                         'scanSaves' => function ($q) {
-                            $q->where('is_partial', false);
+                            $q->whereRaw(
+                            'is_partial IS ' . 'FALSE'
+                        );
                         },
                     ])
                     ->orderByDesc('id')
@@ -45,7 +49,9 @@ class HomeController extends BaseController
             $scanSaves = ScanSave::whereHas('scan', function ($q) use ($userId) {
                     $q->where('user_id', $userId);
                 })
-                ->where('is_partial', true)
+                ->whereRaw(
+                    'is_partial IS ' . 'TRUE'
+                )
                 ->orderByDesc('id')
                 ->limit(5)
                 ->get();
