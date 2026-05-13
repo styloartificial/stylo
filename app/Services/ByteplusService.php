@@ -8,22 +8,22 @@ class ByteplusService
 {
     public static function run(string $prompt, array $imagesUrl = [], int $generateImages = 1): array
     {
-
-        if (!$prompt) {
-            throw new \InvalidArgumentException('Prompt is required');
-        }
         \Illuminate\Support\Facades\Log::info("Payload to BytePlusService", [
             'prompt' => $prompt,
             'images_url' => $imagesUrl,
             'generate_images' => $generateImages,
         ]);
 
+        if (!$prompt) {
+            throw new \InvalidArgumentException('Prompt is required');
+        }
+
         $analysis = self::analyze($prompt, $imagesUrl);
 
         $promptForImageGen = "Edit foto orang ini berdasarkan summary berikut dan hasilkan 3 foto dengan pose gerakan yang berbeda. " . ($analysis['summary'] ?? '');
         $images = self::generateImages($promptForImageGen, $imagesUrl[0], $generateImages);
 
-        Illuminate\Support\Facades\Log::info("BytePlusService result: " . json_encode([
+        \Illuminate\Support\Facades\Log::info("BytePlusService result: " . json_encode([
             'analysis' => $analysis,
             'images' => $images,
         ]));
