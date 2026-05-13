@@ -18,7 +18,6 @@ class ScanSave extends Model
     ];
 
     protected $casts = [
-        'is_partial' => 'boolean',
         'price' => 'float',
         'rating' => 'float',
         'count_purchase' => 'integer',
