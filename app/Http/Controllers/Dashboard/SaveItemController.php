@@ -80,7 +80,7 @@ class SaveItemController extends BaseController
                 return $this->clientError('Parameter is_partial wajib diisi (0 atau 1).');
             }
 
-            $isPartial = (bool) (int) $request->query('is_partial');
+            $isPartial = $request->query('is_partial') === '1';
             $userId    = $request->user()->id;
 
             // STEP 2 — Validasi from_date & to_date
