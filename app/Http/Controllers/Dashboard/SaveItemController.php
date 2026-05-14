@@ -46,7 +46,7 @@ class SaveItemController extends BaseController
                 return $this->clientError('Scan tidak ditemukan.');
             }
 
-            $isPartial = $request->input('is_partial') === '1';
+            $isPartial = filter_var($request->input('is_partial'), FILTER_VALIDATE_BOOLEAN);
 
             foreach ($validated['items'] as $item) {
                 ScanSave::create([
