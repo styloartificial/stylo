@@ -136,6 +136,10 @@ class BuildPromptHelper
         try {
             FirebaseLogHelper::logPromptSent($db, $ticketId);
 
+            \Illuminate\Support\Facades\Log::info("Payload to BytePlusService", [
+                'prompt' => $prompt,
+                'images_url' => $imagesUrl,
+            ]);
             $result = ByteplusService::run($prompt, $imagesUrl, 3);
 
             FirebaseLogHelper::logPromptCompleted($db, $ticketId);
