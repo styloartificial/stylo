@@ -177,4 +177,26 @@ class SaveItemController extends BaseController
             return $this->serverError($th);
         }
     }
+
+    public function destroy(int $scanId): JsonResponse
+    {
+        try {
+            $userId = request()->user()->id;
+
+            $scan = Scan::where('id', $scanId)
+                        ->where('user_id', $userId)
+                        ->first();
+
+            if (!$scan) {
+                return $this->clientError('Data tidak ditemukan.', 404);
+            }
+
+            // Hapus scan_saves milik scan ini
+            $scan->scanSaves()->delete();
+
+            return $this->success(null, 'Berhasil dihapus.');
+        } catch (\Throwable $th) {
+            return $this->serverError($th);
+        }
+    }
 }
