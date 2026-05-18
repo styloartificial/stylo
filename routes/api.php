@@ -53,11 +53,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/log-scrap-process', [ScanController::class, 'logScrapProcess']);
     Route::post('/close-ticket', [ScanController::class, 'closeTicket']);
-    // Route::get('/profile', [ProfileController::class, 'index']);
+
     Route::prefix('profile')->group(function () {
         Route::get('/', [ProfileController::class, 'index']);
         Route::get('/skin-tone', [ProfileController::class, 'getSkinTone']);
-        Route::get('/body-shape', [ProfileController::class, 'getBodyShape']); 
+        Route::get('/body-shape', [ProfileController::class, 'getBodyShape']);
         Route::patch('/', [ProfileController::class, 'update']);
         Route::post('/change-password', [ProfileController::class, 'changePassword']);
         Route::post('/change-img-url', [ProfileController::class, 'changeImgUrl']);
@@ -66,7 +66,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('saved')->group(function () {
         Route::get('/', [SaveItemController::class, 'index']);
         Route::post('/', [SaveItemController::class, 'store']);
+
+        // ✅ Hapus outfit (is_partial=false), single items TIDAK ikut terhapus
         Route::delete('/{scanId}', [SaveItemController::class, 'destroy']);
+
+        // ✅ Hapus satu single item (is_partial=true) berdasarkan saveId
+        Route::delete('/{scanId}/single/{saveId}', [SaveItemController::class, 'destroySingle']);
     });
 });
 

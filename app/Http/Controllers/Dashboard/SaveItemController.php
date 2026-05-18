@@ -76,7 +76,6 @@ class SaveItemController extends BaseController
             }
 
             $isPartial = $request->query('is_partial') === '1';
-
             $userId    = $request->user()->id;
 
             // STEP 2 — Validasi from_date & to_date
@@ -84,31 +83,26 @@ class SaveItemController extends BaseController
             $toDate   = $request->query('to_date');
 
             if ($fromDate) {
-                // Validasi format from_date
                 try {
                     $fromDate = Carbon::parse($fromDate)->startOfDay();
                 } catch (\Exception $e) {
                     return $this->clientError('Format from_date tidak valid. Gunakan format YYYY-MM-DD.');
                 }
 
-                // Kalau from_date diisi, to_date wajib
                 if (!$toDate) {
                     return $this->clientError('to_date wajib diisi ketika from_date diisi.');
                 }
 
-                // Validasi format to_date
                 try {
                     $toDate = Carbon::parse($toDate)->endOfDay();
                 } catch (\Exception $e) {
                     return $this->clientError('Format to_date tidak valid. Gunakan format YYYY-MM-DD.');
                 }
 
-                // to_date harus >= from_date
                 if ($toDate->lt($fromDate)) {
                     return $this->clientError('to_date harus lebih besar atau sama dengan from_date.');
                 }
 
-                // to_date tidak boleh lebih dari hari ini
                 if ($toDate->gt(Carbon::today()->endOfDay())) {
                     return $this->clientError('to_date tidak boleh lebih dari hari ini.');
                 }
@@ -117,19 +111,14 @@ class SaveItemController extends BaseController
             // STEP 3 — Ambil data
             $scans = Scan::where('user_id', $userId)
                 ->whereHas('scanSaves', function ($q) use ($isPartial) {
-                    $q->whereRaw(
-                        'is_partial IS ' . ($isPartial ? 'TRUE' : 'FALSE')
-                    );
+                    $q->whereRaw('is_partial IS ' . ($isPartial ? 'TRUE' : 'FALSE'));
                 })
                 ->with([
                     'scanResult',
                     'scanSaves' => function ($q) use ($isPartial) {
-                        $q->whereRaw(
-                            'is_partial IS ' . ($isPartial ? 'TRUE' : 'FALSE')
-                        );
+                        $q->whereRaw('is_partial IS ' . ($isPartial ? 'TRUE' : 'FALSE'));
                     },
                 ])
-                // ✅ Filter tanggal kalau from_date & to_date diisi
                 ->when($fromDate, function ($q) use ($fromDate, $toDate) {
                     $q->whereBetween('created_at', [$fromDate, $toDate]);
                 })
@@ -167,13 +156,16 @@ class SaveItemController extends BaseController
                 return $scan;
             });
 
-            // STEP 5 — Return data
             return $this->success($scans);
         } catch (\Throwable $th) {
             return $this->serverError($th);
         }
     }
 
+    /**
+     * Hapus seluruh outfit (scan_saves is_partial = FALSE) milik scan ini.
+     * Single items (is_partial = TRUE) TIDAK ikut terhapus.
+     */
     public function destroy(int $scanId): JsonResponse
     {
         try {
@@ -187,13 +179,52 @@ class SaveItemController extends BaseController
                 return $this->clientError('Data tidak ditemukan.', 404);
             }
 
-            // Hapus scan_saves milik scan ini
-            $scan->scanSaves()->delete();
+            // ✅ Hanya hapus is_partial = FALSE (outfit), single items tetap aman
+            $deleted = $scan->scanSaves()
+                            ->whereRaw('is_partial IS FALSE')
+                            ->delete();
 
-            return $this->success(null, 'Berhasil dihapus.');
+            if ($deleted === 0) {
+                return $this->clientError('Tidak ada outfit yang ditemukan untuk dihapus.');
+            }
+
+            return $this->success(null, 'Outfit berhasil dihapus.');
         } catch (\Throwable $th) {
             return $this->serverError($th);
         }
     }
-    
+
+    /**
+     * Hapus satu single item (scan_save is_partial = TRUE) berdasarkan saveId.
+     * Outfit (is_partial = FALSE) TIDAK ikut terhapus.
+     */
+    public function destroySingle(int $scanId, int $saveId): JsonResponse
+    {
+        try {
+            $userId = request()->user()->id;
+
+            // Pastikan scan milik user ini
+            $scan = Scan::where('id', $scanId)
+                        ->where('user_id', $userId)
+                        ->first();
+
+            if (!$scan) {
+                return $this->clientError('Data tidak ditemukan.', 404);
+            }
+
+            // Cari & hapus single item spesifik yang is_partial = TRUE
+            $deleted = $scan->scanSaves()
+                            ->whereRaw('is_partial IS TRUE')
+                            ->where('id', $saveId)
+                            ->delete();
+
+            if ($deleted === 0) {
+                return $this->clientError('Single item tidak ditemukan.', 404);
+            }
+
+            return $this->success(null, 'Single item berhasil dihapus.');
+        } catch (\Throwable $th) {
+            return $this->serverError($th);
+        }
+    }
 }
