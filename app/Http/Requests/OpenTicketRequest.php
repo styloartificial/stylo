@@ -23,23 +23,36 @@ class OpenTicketRequest extends BaseRequest
     public function rules(): array
     {
         return [
-            'img_url'                    => ['required', 'image'],
-            'title'                      => ['nullable', 'string'],
+            'img_url'                     => ['required', 'image'],
+            'title'                       => ['nullable', 'string'],
             'outfit_detail'               => ['nullable', 'string'],
 
-            'scan_category_id'           => ['required', 'array'],
+            'scan_category_id'            => ['required', 'array'],
 
-            'scan_category_id.item'      => ['nullable', 'array'],
-            'scan_category_id.item.*'    => ['exists:m_scan_categories,id'],
+            // item → multi select, bebas
+            'scan_category_id.item'       => ['nullable', 'array'],
+            'scan_category_id.item.*'     => ['exists:m_scan_categories,id'],
 
-            'scan_category_id.occasion'  => ['nullable', 'array'],
-            'scan_category_id.occasion.*'=> ['exists:m_scan_categories,id'],
+            // occasion → single select
+            'scan_category_id.occasion'   => ['nullable', 'array', 'max:1'],
+            'scan_category_id.occasion.*' => ['exists:m_scan_categories,id'],
 
-            'scan_category_id.style'     => ['nullable', 'array'],
-            'scan_category_id.style.*'   => ['exists:m_scan_categories,id'],
+            // style → single select
+            'scan_category_id.style'      => ['nullable', 'array', 'max:1'],
+            'scan_category_id.style.*'    => ['exists:m_scan_categories,id'],
 
-            'scan_category_id.hijab'     => ['nullable', 'array'],
-            'scan_category_id.hijab.*'   => ['exists:m_scan_categories,id'],
+            // hijab → single select
+            'scan_category_id.hijab'      => ['nullable', 'array', 'max:1'],
+            'scan_category_id.hijab.*'    => ['exists:m_scan_categories,id'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'scan_category_id.occasion.max' => 'Occasion hanya bisa dipilih satu.',
+            'scan_category_id.style.max'    => 'Style hanya bisa dipilih satu.',
+            'scan_category_id.hijab.max'    => 'Hijab hanya bisa dipilih satu.',
         ];
     }
 }
