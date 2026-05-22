@@ -37,8 +37,8 @@ class FirebaseLogHelper {
         self::start(
             $db,
             $ticketId,
-            'Registering data in ticket queue',
-            'Storing the initial request data into the ticket queue for processing.'
+            'Mendaftarkan data ke antrean tiket',
+            'Menyimpan data permintaan awal ke dalam antrean tiket untuk diproses.'
         );
     }
 
@@ -46,8 +46,8 @@ class FirebaseLogHelper {
         self::start(
             $db,
             $ticketId,
-            'Creating a prompt',
-            'Generating an AI prompt based on the submitted data.'
+            'Membuat prompt',
+            'Membuat prompt untuk AI berdasarkan data yang diinput.'
         );
     }
 
@@ -55,8 +55,8 @@ class FirebaseLogHelper {
         self::start(
             $db,
             $ticketId,
-            'Submitting the prompt',
-            'Sending the generated prompt to the AI service for processing.'
+            'Mengirim prompt ke AI',
+            'Mengirim prompt ke AI service untuk diproses.'
         );
     }
 
@@ -64,8 +64,8 @@ class FirebaseLogHelper {
         self::start(
             $db,
             $ticketId,
-            'Getting result from prompt',
-            'Receiving and parsing the AI-generated response.'
+            'Mendapatkan hasil dari prompt',
+            'Menerima dan memproses hasil respons yang dihasilkan oleh AI.'
         );
     }
 
@@ -73,8 +73,8 @@ class FirebaseLogHelper {
         self::start(
             $db,
             $ticketId,
-            'Getting data for scraping',
-            'Preparing and collecting the required data for the scraping process.'
+            'Menyiapkan data scraping',
+            'Menyiapkan dan mengumpulkan data untuk proses scraping.'
         );
     }
 
@@ -82,8 +82,8 @@ class FirebaseLogHelper {
         self::start(
             $db,
             $ticketId,
-            'Registering data in scrap queue',
-            'Adding scraping tasks to the scraping queue for execution.'
+            'Mendaftarkan data ke antrean scraping',
+            'Menambahkan tugas scraping ke antrean untuk dijalankan.'
         );
     }
 
@@ -91,8 +91,8 @@ class FirebaseLogHelper {
         self::start(
             $db,
             $ticketId,
-            'Getting the scrap result',
-            'Retrieving and processing the scraping results.'
+            'Mendapatkan hasil scraping',
+            'Mendapatkan dan memproses hasil scraping dari AI.'
         );
     }
 
@@ -100,8 +100,8 @@ class FirebaseLogHelper {
         self::start(
             $db,
             $ticketId,
-            'Successful generation',
-            'Finalizing the process and confirming successful output generation.'
+            'Pembuatan berhasil selesai',
+            'Menyelesaikan proses dan mengfirmasi pembuatan berhasil.'
         );
     }
 }
