@@ -180,8 +180,7 @@ class BuildPromptHelper
                 'img_urls' => $summaryUrls
             ]);
             $scan->title = $title;
-            $scanResult = $scan->scanResult()->latest()->first();
-            $scan->img_url = $scanResult->img_urls[0] ?? $scan->img_url;    
+            $scan->img_url = $scan->scanResult->img_urls[0] ?? $scan->img_url;  
             $scan->save();
 
             return $products;
