@@ -20,6 +20,7 @@ class MScanCategorySeeder extends Seeder
             ['title' => 'Dress',      'icon' => 'woman-outline',   'type' => 'item'],
             ['title' => 'Sepatu',     'icon' => 'walk-outline',    'type' => 'item'],
             ['title' => 'Aksesories', 'icon' => 'glasses-outline', 'type' => 'item'],
+            ['title' => 'Gamis',      'icon' => 'body-outline',    'type' => 'item'],
 
             // Occasion
             ['title' => 'Kerja',    'icon' => 'briefcase-outline', 'type' => 'occasion'],
