@@ -175,14 +175,24 @@ class BuildPromptHelper
                 }
             }
 
-            $scan->scanResult()->create([
+            $scanResult = $scan->scanResult()->create([
                 'summary'  => $summary,
                 'img_urls' => $summaryUrls
             ]);
+
+            \Illuminate\Support\Facades\Log::info("=== DEBUG SCAN RESULT ===", [
+                'summaryUrls'        => $summaryUrls,
+                'scanResult_img_urls' => $scanResult->img_urls,
+                'index_0'            => $scanResult->img_urls[0] ?? 'KOSONG',
+            ]);
+
             $scan->title = $title;
-            // $scan->img_url = $scan->scanResult->img_urls[0] ?? $scan->img_url; 
-            $scan->img_url = $scanResult->img_urls[0] ?? $scan->img_url; 
+            $scan->img_url = $scanResult->img_urls[0] ?? $scan->img_url;
             $scan->save();
+
+            \Illuminate\Support\Facades\Log::info("=== DEBUG SCAN IMG_URL ===", [
+                'scan_img_url' => $scan->img_url,
+            ]);
 
             return $products;
         } catch (\Throwable $e) {
