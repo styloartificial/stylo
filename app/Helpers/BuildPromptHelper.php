@@ -74,58 +74,146 @@ class BuildPromptHelper
         $outfitDetail = $scan->outfit_detail ?? null;
 
         $prompt = "
-            Kamu adalah AI fashion stylist. Saya akan memberikan foto seseorang beserta preferensi outfit mereka.
+            Kamu adalah AI fashion stylist dan AI virtual try-on expert.
 
-            TUGASMU:
-            1. Lihat foto orang ini dengan detail (wajah, postur, ukuran tubuh, warna kulit)
-            2. Buat rekomendasi outfit BARU yang menggantikan outfit yang sedang dipakai
-            3. Outfit baru harus sesuai dengan kategori dan preferensi yang dipilih
-            4. Generate gambar orang yang SAMA dengan outfit baru (wajah, postur, ukuran TIDAK BOLEH berubah, hanya outfit yang diganti)
+            Saya akan memberikan foto seseorang beserta preferensi outfit mereka.
 
-            Profil pengguna:
+            TUGAS UTAMA:
+            1. Analisis foto orang secara detail:
+            - wajah
+            - postur tubuh
+            - ukuran tubuh
+            - warna kulit
+            - proporsi tubuh
+
+            2. Ganti outfit lama dengan outfit BARU sesuai kategori yang dipilih user.
+
+            3. Pertahankan IDENTITAS asli orang:
+            - wajah TIDAK berubah
+            - bentuk tubuh TIDAK berubah
+            - pose TIDAK berubah
+            - background TIDAK berubah
+            - framing foto TIDAK berubah
+
+            4. HANYA outfit/pakaian yang boleh berubah.
+
+            ==================================================
+            PROFIL USER
+            ==================================================
+
             - Gender: $userGender
             - Tinggi: $userHeight cm
             - Berat: $userWeight kg
             - Skin tone: $userSkinTone
             - Body shape: $userBodyShape
 
-            Kategori outfit yang WAJIB diterapkan:
-            " . (!empty($scanCategoryItems)   ? "- Item yang HARUS diganti/difokuskan: $scanCategoryItems\n"        : "") .
-            (!empty($scanCategoryOccasion) ? "- Outfit HARUS cocok untuk acara: $scanCategoryOccasion\n"          : "") .
-            (!empty($scanCategoryStyle)    ? "- Gaya/style yang WAJIB diterapkan: $scanCategoryStyle\n"           : "") .
-            (!empty($scanCategoryHijab)    ? "- Pilihan hijab yang dipakai: $scanCategoryHijab\n"                 : "") .
-            ($outfitDetail                 ? "- Permintaan spesifik dari user: $outfitDetail\n"                   : "") . "
+            ==================================================
+            PREFERENSI OUTFIT
+            ==================================================
 
-            ATURAN PENTING untuk gambar yang di-generate:
-            - Wajah orang TIDAK BOLEH berubah
-            - Postur dan ukuran tubuh TIDAK BOLEH berubah  
-            - Background TIDAK BOLEH berubah
-            - Ukuran dan layout foto TIDAK BOLEH berubah
-            - HANYA outfit/pakaian yang boleh berubah sesuai kategori di atas
-            - Jika item yang dipilih adalah 'Atasan' maka HANYA atasan yang diganti
-            - Jika item yang dipilih adalah 'Bawahan' maka HANYA bawahan yang diganti
-            - Jika item yang dipilih adalah 'Outer' maka tambahkan outer di atas outfit yang ada
-            - Jika item yang dipilih adalah 'Hijab' maka tambahkan hijab di atas outfit yang ada
-            - Jika user memilih dua kategori misal atasan dan bawahan, maka ganti item yang dipilih
-            - Ambil semua produk yang direkomendasikan sesuai item yang dipilih 
-            - kalau memilih hijab ya tampilkan juga hijab yang direkomendasikan begitu pula dengan kategori lain
-            - Warna outfit yang direkomendasikan harus cocok dengan skin tone $userSkinTone
+            " . (!empty($scanCategoryItems)   ? "- Item outfit: $scanCategoryItems\n" : "") . "
+            " . (!empty($scanCategoryOccasion) ? "- Occasion/acara: $scanCategoryOccasion\n" : "") . "
+            " . (!empty($scanCategoryStyle)    ? "- Style/gaya: $scanCategoryStyle\n" : "") . "
+            " . (!empty($scanCategoryHijab)    ? "- Style hijab: $scanCategoryHijab\n" : "") . "
+            " . ($outfitDetail ? "- Detail tambahan user: $outfitDetail\n" : "") . "
 
-            WAJIB ikuti format JSON ini tanpa tambahan teks lain:
+            ==================================================
+            ATURAN WAJIB
+            ==================================================
+
+            - Wajah HARUS sama dengan foto asli
+            - Bentuk tubuh HARUS sama
+            - Background HARUS sama
+            - Foto HARUS realistis
+            - Outfit baru HARUS natural dan menyatu dengan tubuh asli
+            - Jangan membuat deformasi tangan, wajah, atau kain
+            - Jangan crop tubuh
+            - Jangan mengubah pencahayaan secara ekstrem
+
+            ==================================================
+            ATURAN KHUSUS ITEM
+            ==================================================
+
+            - Jika item 'Atasan' dipilih:
+            hanya ganti atasan.
+
+            - Jika item 'Bawahan' dipilih:
+            hanya ganti bawahan.
+
+            - Jika item 'Outer' dipilih:
+            tambahkan outer yang cocok.
+
+            - Jika item 'Hijab' dipilih:
+            AKTIFKAN MODE MODEST / FULL COVER HIJAB OUTFIT.
+
+            ==================================================
+            ATURAN SUPER PENTING UNTUK HIJAB
+            ==================================================
+
+            Jika user memilih kategori HIJAB, maka WAJIB:
+
+            - Seluruh rambut HARUS tertutup sempurna
+            - Tidak boleh ada rambut terlihat
+            - Leher HARUS tertutup
+            - Dada HARUS tertutup
+            - Lengan HARUS panjang
+            - Bawahan HARUS panjang sampai mata kaki
+            - Outfit HARUS longgar dan sopan
+            - Tidak boleh pakaian ketat
+            - Tidak boleh crop top
+            - Tidak boleh rok pendek
+            - Tidak boleh celana pendek
+            - Tidak boleh sleeveless
+            - Tidak boleh transparan
+            - Tidak boleh memperlihatkan kulit selain wajah dan tangan
+
+            Jika foto asli user BELUM berhijab:
+            - ubah outfit menjadi fully modest hijab fashion
+            - tambahkan hijab yang natural dan realistis
+            - rambut asli jangan terlihat sama sekali
+
+            Jika foto asli user SUDAH berhijab:
+            - pertahankan penggunaan hijab
+            - upgrade style hijab sesuai kategori yang dipilih
+            - jika user memilih hijab motif, gunakan hijab motif
+            - jika user memilih hijab pashmina, ubah menjadi pashmina
+            - tetap pastikan seluruh aurat tertutup dengan rapi
+
+            Style hijab harus:
+            - realistis
+            - rapi
+            - natural
+            - fashionable
+            - menyatu dengan outfit
+
+            ==================================================
+            WARNA DAN STYLE
+            ==================================================
+
+            - Warna outfit HARUS cocok dengan skin tone $userSkinTone
+            - Outfit HARUS cocok dengan body shape $userBodyShape
+            - Outfit HARUS cocok dengan occasion yang dipilih
+            - Outfit HARUS cocok dengan style yang dipilih
+
+            ==================================================
+            OUTPUT FORMAT
+            ==================================================
+
+            WAJIB output JSON VALID tanpa teks tambahan.
 
             {
-                \"summary\": \"string (jelaskan outfit baru yang direkomendasikan secara detail: item apa yang diganti, warna, bahan, dan alasan kenapa cocok untuk $userGender dengan body shape $userBodyShape dan acara/style yang dipilih)\",
-                \"title\": \"string (judul singkat outfit rekomendasi, contoh: 'Casual Minimalist Work Look')\",
-                \"products\": [
-                    {
-                        \"name\": \"string (nama produk spesifik yang direkomendasikan sesuai item yang dipilih)\",
-                        \"brand\": \"string (brand fashion yang relevan)\",
-                        \"category\": \"string (harus salah satu dari: $scanCategoryItems)\"
-                    }
-                ]
+            \"summary\": \"jelaskan outfit baru secara detail\",
+            \"title\": \"judul outfit\",
+            \"products\": [
+                {
+                \"name\": \"nama produk\",
+                \"brand\": \"brand\",
+                \"category\": \"kategori produk\"
+                }
+            ]
             }
             ";
-
+            
         \Illuminate\Support\Facades\Log::info("prompt: {$prompt}");
 
         $imagesUrl = [
