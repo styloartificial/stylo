@@ -15,6 +15,21 @@ use Illuminate\Support\Facades\DB;
 
 class SaveItemController extends BaseController
 {
+    // ─── Helper: convert path ke full URL ────────────────────────────────────
+    private function convertToUrl(?string $path): ?string
+    {
+        if (empty($path)) return $path;
+        if (filter_var($path, FILTER_VALIDATE_URL)) return $path;
+
+        $normalized = str_replace('\\', '/', $path);
+        $folder     = trim(dirname($normalized), '/');
+        $fileName   = basename($normalized);
+
+        if ($folder === '.' || $folder === '') return $path;
+
+        return S3Helper::getUrlFileS3($folder, $fileName);
+    }
+
     public function store(StoreSaveItemRequest $request): JsonResponse
     {
         try {
@@ -131,32 +146,56 @@ class SaveItemController extends BaseController
             }
 
             $scans->getCollection()->transform(function ($scan) {
-                if (!$scan->relationLoaded('scanResult') || !$scan->scanResult) {
-                    return $scan;
+                // ✅ Convert scan->img_url
+                $scan->img_url = $this->convertToUrl($scan->img_url);
+
+                // Convert scanResult->img_urls
+                if ($scan->relationLoaded('scanResult') && $scan->scanResult) {
+                    $imgUrls = $scan->scanResult->img_urls ?? [];
+
+                    $scan->scanResult->img_urls = collect($imgUrls)
+                        ->map(fn($path) => $this->convertToUrl($path))
+                        ->values()
+                        ->toArray();
                 }
-
-                $imgUrls = $scan->scanResult->img_urls ?? [];
-
-                $scan->scanResult->img_urls = collect($imgUrls)
-                    ->map(function ($path) {
-                        if (empty($path)) return $path;
-                        if (filter_var($path, FILTER_VALIDATE_URL)) return $path;
-
-                        $normalized = str_replace('\\', '/', $path);
-                        $folder     = trim(dirname($normalized), '/');
-                        $fileName   = basename($normalized);
-
-                        if ($folder === '.' || $folder === '') return $path;
-
-                        return S3Helper::getUrlFileS3($folder, $fileName);
-                    })
-                    ->values()
-                    ->toArray();
 
                 return $scan;
             });
 
             return $this->success($scans);
+        } catch (\Throwable $th) {
+            return $this->serverError($th);
+        }
+    }
+
+    public function show(int $scanId): JsonResponse
+    {
+        try {
+            $userId = request()->user()->id;
+
+            $scan = Scan::where('id', $scanId)
+                ->where('user_id', $userId)
+                ->with(['scanResult', 'scanSaves'])
+                ->first();
+
+            if (!$scan) {
+                return $this->clientError('Data tidak ditemukan.', 404);
+            }
+
+            // ✅ Convert scan->img_url
+            $scan->img_url = $this->convertToUrl($scan->img_url);
+
+            // Convert scanResult->img_urls
+            if ($scan->relationLoaded('scanResult') && $scan->scanResult) {
+                $imgUrls = $scan->scanResult->img_urls ?? [];
+
+                $scan->scanResult->img_urls = collect($imgUrls)
+                    ->map(fn($path) => $this->convertToUrl($path))
+                    ->values()
+                    ->toArray();
+            }
+
+            return $this->success($scan);
         } catch (\Throwable $th) {
             return $this->serverError($th);
         }
@@ -179,7 +218,6 @@ class SaveItemController extends BaseController
                 return $this->clientError('Data tidak ditemukan.', 404);
             }
 
-            // ✅ Hanya hapus is_partial = FALSE (outfit), single items tetap aman
             $deleted = $scan->scanSaves()
                             ->whereRaw('is_partial IS FALSE')
                             ->delete();
@@ -203,7 +241,6 @@ class SaveItemController extends BaseController
         try {
             $userId = request()->user()->id;
 
-            // Pastikan scan milik user ini
             $scan = Scan::where('id', $scanId)
                         ->where('user_id', $userId)
                         ->first();
@@ -212,7 +249,6 @@ class SaveItemController extends BaseController
                 return $this->clientError('Data tidak ditemukan.', 404);
             }
 
-            // Cari & hapus single item spesifik yang is_partial = TRUE
             $deleted = $scan->scanSaves()
                             ->whereRaw('is_partial IS TRUE')
                             ->where('id', $saveId)
@@ -223,47 +259,6 @@ class SaveItemController extends BaseController
             }
 
             return $this->success(null, 'Single item berhasil dihapus.');
-        } catch (\Throwable $th) {
-            return $this->serverError($th);
-        }
-    }
-    
-    public function show(int $scanId): JsonResponse
-    {
-        try {
-            $userId = request()->user()->id;
-
-            $scan = Scan::where('id', $scanId)
-                ->where('user_id', $userId)
-                ->with(['scanResult', 'scanSaves'])
-                ->first();
-
-            if (!$scan) {
-                return $this->clientError('Data tidak ditemukan.', 404);
-            }
-
-            // Sama persis dengan transform di index
-            if ($scan->relationLoaded('scanResult') && $scan->scanResult) {
-                $imgUrls = $scan->scanResult->img_urls ?? [];
-
-                $scan->scanResult->img_urls = collect($imgUrls)
-                    ->map(function ($path) {
-                        if (empty($path)) return $path;
-                        if (filter_var($path, FILTER_VALIDATE_URL)) return $path;
-
-                        $normalized = str_replace('\\', '/', $path);
-                        $folder     = trim(dirname($normalized), '/');
-                        $fileName   = basename($normalized);
-
-                        if ($folder === '.' || $folder === '') return $path;
-
-                        return S3Helper::getUrlFileS3($folder, $fileName);
-                    })
-                    ->values()
-                    ->toArray();
-            }
-
-            return $this->success($scan);
         } catch (\Throwable $th) {
             return $this->serverError($th);
         }
