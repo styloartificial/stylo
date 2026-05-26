@@ -227,4 +227,45 @@ class SaveItemController extends BaseController
             return $this->serverError($th);
         }
     }
+    
+    public function show(int $scanId): JsonResponse
+    {
+        try {
+            $userId = request()->user()->id;
+
+            $scan = Scan::where('id', $scanId)
+                ->where('user_id', $userId)
+                ->with(['scanResult', 'scanSaves'])
+                ->first();
+
+            if (!$scan) {
+                return $this->clientError('Data tidak ditemukan.', 404);
+            }
+
+            // Sama persis dengan transform di index
+            if ($scan->relationLoaded('scanResult') && $scan->scanResult) {
+                $imgUrls = $scan->scanResult->img_urls ?? [];
+
+                $scan->scanResult->img_urls = collect($imgUrls)
+                    ->map(function ($path) {
+                        if (empty($path)) return $path;
+                        if (filter_var($path, FILTER_VALIDATE_URL)) return $path;
+
+                        $normalized = str_replace('\\', '/', $path);
+                        $folder     = trim(dirname($normalized), '/');
+                        $fileName   = basename($normalized);
+
+                        if ($folder === '.' || $folder === '') return $path;
+
+                        return S3Helper::getUrlFileS3($folder, $fileName);
+                    })
+                    ->values()
+                    ->toArray();
+            }
+
+            return $this->success($scan);
+        } catch (\Throwable $th) {
+            return $this->serverError($th);
+        }
+    }
 }
