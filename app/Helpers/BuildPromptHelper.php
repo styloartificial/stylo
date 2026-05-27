@@ -74,146 +74,135 @@ class BuildPromptHelper
         $outfitDetail = $scan->outfit_detail ?? null;
 
         $prompt = "
-            Kamu adalah AI fashion stylist dan AI virtual try-on expert.
+            Kamu adalah AI fashion stylist dan virtual try-on expert.
 
-            Saya akan memberikan foto seseorang beserta preferensi outfit mereka.
+            ==================================================
+            TUGAS
+            ==================================================
 
-            TUGAS UTAMA:
-            1. Analisis foto orang secara detail:
-            - wajah
-            - postur tubuh
-            - ukuran tubuh
-            - warna kulit
-            - proporsi tubuh
+            Dari foto yang diberikan, ganti HANYA outfit sesuai preferensi user.
 
-            2. Ganti outfit lama dengan outfit BARU sesuai kategori yang dipilih user.
+            PERTAHANKAN (JANGAN diubah):
+            - Wajah & identitas
+            - Bentuk & postur tubuh
+            - Pose
+            - Background & framing foto
+            - Pencahayaan
 
-            3. Pertahankan IDENTITAS asli orang:
-            - wajah TIDAK berubah
-            - bentuk tubuh TIDAK berubah
-            - pose TIDAK berubah
-            - background TIDAK berubah
-            - framing foto TIDAK berubah
-
-            4. HANYA outfit/pakaian yang boleh berubah.
+            YANG BOLEH DIUBAH: hanya pakaian dan aksesori.
 
             ==================================================
             PROFIL USER
             ==================================================
 
-            - Gender: $userGender
-            - Tinggi: $userHeight cm
-            - Berat: $userWeight kg
-            - Skin tone: $userSkinTone
-            - Body shape: $userBodyShape
+            - Gender      : $userGender
+            - Tinggi      : $userHeight cm
+            - Berat       : $userWeight kg
+            - Warna kulit : $userSkinTone
+            - Bentuk tubuh: $userBodyShape
 
             ==================================================
             PREFERENSI OUTFIT
             ==================================================
-
-            " . (!empty($scanCategoryItems)   ? "- Item outfit: $scanCategoryItems\n" : "") . "
-            " . (!empty($scanCategoryOccasion) ? "- Occasion/acara: $scanCategoryOccasion\n" : "") . "
-            " . (!empty($scanCategoryStyle)    ? "- Style/gaya: $scanCategoryStyle\n" : "") . "
-            " . (!empty($scanCategoryHijab)    ? "- Style hijab: $scanCategoryHijab\n" : "") . "
-            " . ($outfitDetail ? "- Detail tambahan user: $outfitDetail\n" : "") . "
-
+            " . (!empty($scanCategoryItems)    ? "- Item     : $scanCategoryItems\n"    : "")
+            . (!empty($scanCategoryOccasion)   ? "- Occasion : $scanCategoryOccasion\n" : "")
+            . (!empty($scanCategoryStyle)      ? "- Gaya     : $scanCategoryStyle\n"    : "")
+            . (!empty($scanCategoryHijab)      ? "- Hijab    : $scanCategoryHijab\n"    : "")
+            . ($outfitDetail ? "
             ==================================================
-            ATURAN WAJIB
+            ⚠️ DETAIL OUTFIT DARI USER — PRIORITAS TINGGI
             ==================================================
 
-            - Wajah HARUS sama dengan foto asli
-            - Bentuk tubuh HARUS sama
-            - Background HARUS sama
-            - Foto HARUS realistis
-            - Outfit baru HARUS natural dan menyatu dengan tubuh asli
-            - Jangan membuat deformasi tangan, wajah, atau kain
-            - Jangan crop tubuh
-            - Jangan mengubah pencahayaan secara ekstrem
+            User telah memberikan instruksi spesifik berikut. WAJIB dipatuhi sepenuhnya:
+
+            \"$outfitDetail\"
+
+            Panduan membaca instruksi user:
+            ► Jika user menyebut sesuatu yang DIA SUKA     → wajib diterapkan pada outfit
+            ► Jika user menyebut sesuatu yang TIDAK DIA SUKA → wajib dihindari pada outfit
+            ► Jika user menyebut warna spesifik             → gunakan warna tersebut
+            ► Jika user menyebut item/bahan/model spesifik  → terapkan secara akurat
+            ► Jangan mengabaikan satu pun detail dari instruksi user di atas
 
             ==================================================
-            ATURAN KHUSUS ITEM
-            ==================================================
-
-            - Jika item 'Atasan' dipilih:
-            hanya ganti atasan.
-
-            - Jika item 'Bawahan' dipilih:
-            hanya ganti bawahan.
-
-            - Jika item 'Outer' dipilih:
-            tambahkan outer yang cocok.
-
-            - Jika item 'Hijab' dipilih:
-            AKTIFKAN MODE MODEST / FULL COVER HIJAB OUTFIT.
+            " : "") . "
 
             ==================================================
-            ATURAN SUPER PENTING UNTUK HIJAB
+            ATURAN PER ITEM
             ==================================================
 
-            Jika user memilih kategori HIJAB, maka WAJIB:
-
-            - Seluruh rambut HARUS tertutup sempurna
-            - Tidak boleh ada rambut terlihat
-            - Leher HARUS tertutup
-            - Dada HARUS tertutup
-            - Lengan HARUS panjang
-            - Bawahan HARUS panjang sampai mata kaki
-            - Outfit HARUS longgar dan sopan
-            - Tidak boleh pakaian ketat
-            - Tidak boleh crop top
-            - Tidak boleh rok pendek
-            - Tidak boleh celana pendek
-            - Tidak boleh sleeveless
-            - Tidak boleh transparan
-            - Tidak boleh memperlihatkan kulit selain wajah dan tangan
-
-            Jika foto asli user BELUM berhijab:
-            - ubah outfit menjadi fully modest hijab fashion
-            - tambahkan hijab yang natural dan realistis
-            - rambut asli jangan terlihat sama sekali
-
-            Jika foto asli user SUDAH berhijab:
-            - pertahankan penggunaan hijab
-            - upgrade style hijab sesuai kategori yang dipilih
-            - jika user memilih hijab motif, gunakan hijab motif
-            - jika user memilih hijab pashmina, ubah menjadi pashmina
-            - tetap pastikan seluruh aurat tertutup dengan rapi
-
-            Style hijab harus:
-            - realistis
-            - rapi
-            - natural
-            - fashionable
-            - menyatu dengan outfit
+            - Atasan  → ganti atasan saja
+            - Bawahan → ganti bawahan saja
+            - Outer   → tambahkan outer yang sesuai
+            - Hijab   → aktifkan MODE HIJAB PENUH (lihat aturan di bawah)
 
             ==================================================
-            WARNA DAN STYLE
+            ⚠️ MODE HIJAB — ATURAN KRITIS (WAJIB DIPATUHI)
             ==================================================
 
-            - Warna outfit HARUS cocok dengan skin tone $userSkinTone
-            - Outfit HARUS cocok dengan body shape $userBodyShape
-            - Outfit HARUS cocok dengan occasion yang dipilih
-            - Outfit HARUS cocok dengan style yang dipilih
+            Jika 'Hijab' dipilih:
+
+            PENUTUPAN RAMBUT — PRIORITAS TERTINGGI:
+            ► SELURUH rambut WAJIB tertutup sempurna — tanpa pengecualian
+            ► Jika foto asli BELUM berhijab:
+            - Buat hijab yang realistis dan menutupi 100% rambut
+            - Tidak boleh ada garis rambut, helai rambut, atau tekstur rambut terlihat
+            - Perlakukan rambut yang terlihat seperti aurat yang harus ditutup
+            ► Jika foto asli SUDAH berhijab:
+            - Pertahankan hijab, upgrade style sesuai preferensi user
+            - Pastikan semua rambut tetap tertutup setelah pergantian style
+
+            PENUTUPAN TUBUH (semua wajib):
+            ✓ Rambut  → tertutup penuh oleh hijab
+            ✓ Leher   → tertutup
+            ✓ Dada    → tertutup
+            ✓ Lengan  → hanya lengan panjang
+            ✓ Kaki    → bawahan panjang hingga mata kaki
+            ✓ Siluet  → longgar dan sopan
+
+            SANGAT DILARANG:
+            ✗ Rambut atau garis rambut terlihat
+            ✗ Pakaian ketat
+            ✗ Crop top / rok pendek / celana pendek
+            ✗ Pakaian tanpa lengan
+            ✗ Kain transparan atau tembus pandang
+            ✗ Kulit terlihat selain wajah dan tangan
+
+            EKSEKUSI HIJAB:
+            - Tampak realistis, natural, dan rapi
+            - Modis dan sesuai dengan keseluruhan outfit
+            - Menyatu dengan warna dan gaya outfit
 
             ==================================================
-            OUTPUT FORMAT
+            PANDUAN WARNA & FIT
             ==================================================
 
-            WAJIB output JSON VALID tanpa teks tambahan.
+            - Pilih warna yang cocok dengan warna kulit : $userSkinTone
+            - Pilih siluet yang sesuai bentuk tubuh     : $userBodyShape
+            - Sesuaikan dengan occasion dan gaya yang dipilih
+            - Outfit harus tampak realistis di tubuh — tidak ada distorsi kain,
+            tangan atau wajah tidak cacat, tidak ada anggota tubuh yang terpotong
+
+            ==================================================
+            OUTPUT — JSON VALID SAJA (tanpa teks tambahan)
+            ==================================================
+
+            Untuk setiap produk, berikan data SPESIFIK dan ACTIONABLE untuk keperluan pencarian produk nyata.
+            Bayangkan kamu sedang menulis search query untuk marketplace (Tokopedia, Shopee, Zalora).
 
             {
-            \"summary\": \"jelaskan outfit baru secara detail\",
             \"title\": \"judul outfit\",
+            \"summary\": \"deskripsi detail outfit baru\",
             \"products\": [
                 {
-                \"name\": \"nama produk\",
-                \"brand\": \"brand\",
+                \"name\": \"[jenis item] [bahan/material] [model/cut] [warna spesifik] — contoh: kemeja linen oversized lengan panjang putih tulang\",
+                \"brand\": \"nama brand (isi 'unbranded' jika tidak spesifik)\",
                 \"category\": \"kategori produk\"
                 }
             ]
             }
             ";
-            
+
         \Illuminate\Support\Facades\Log::info("prompt: {$prompt}");
 
         $imagesUrl = [
