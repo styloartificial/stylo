@@ -20,7 +20,19 @@ class ByteplusService
 
         $analysis = self::analyze($prompt, $imagesUrl);
 
-        $promptForImageGen = "Edit foto orang ini berdasarkan summary berikut dan hasilkan 3 foto dengan pose gerakan yang berbeda. " . ($analysis['summary'] ?? '');
+        $isHijab = !empty($scanCategoryHijab);
+
+        $modestRule = $isHijab
+            ? "WAJIB: outfit hijab syari — seluruh rambut tertutup hijab, leher tertutup, lengan panjang, bawahan panjang hingga mata kaki, pakaian longgar tidak membentuk tubuh. DILARANG: rambut/garis rambut terlihat, pakaian ketat, transparan, atau kulit terlihat selain wajah dan tangan."
+            : "WAJIB: pakaian sopan dan rapi sesuai adab — tidak terlalu ketat, tidak terlalu terbuka. DILARANG: pakaian yang menonjolkan lekukan tubuh secara berlebihan, kulit terlalu banyak terlihat.";
+
+
+        $promptForImageGen = "Edit foto orang ini sesuai deskripsi outfit berikut.
+            WAJIB: pose berdiri tegak natural seperti foto katalog fashion (Uniqlo/Zara/H&M).
+            DILARANG: pose duduk, berbaring, atau menonjolkan lekukan tubuh.
+            DILARANG: paha, perut, atau punggung terlihat.
+            {$modestRule}
+            " . ($analysis['summary'] ?? '');
         $images = self::generateImages($promptForImageGen, $imagesUrl[0], $generateImages);
 
         \Illuminate\Support\Facades\Log::info("BytePlusService result: " . json_encode([
