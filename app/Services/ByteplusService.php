@@ -24,7 +24,8 @@ class ByteplusService
 
         $modestRule = $isHijab
             ? "WAJIB: outfit hijab syari — seluruh rambut tertutup hijab, leher tertutup, lengan panjang, bawahan panjang hingga mata kaki, pakaian longgar tidak membentuk tubuh. DILARANG: rambut/garis rambut terlihat, pakaian ketat, transparan, atau kulit terlihat selain wajah dan tangan."
-            : "WAJIB: pakaian sopan dan rapi sesuai adab — tidak terlalu ketat, tidak terlalu terbuka. DILARANG: pakaian yang menonjolkan lekukan tubuh secara berlebihan, kulit terlalu banyak terlihat.";
+            : "WAJIB: pakaian sopan dan rapi sesuai adab — tidak terlalu ketat, tidak terlalu terbuka. 
+            DILARANG: pakaian yang menonjolkan lekukan tubuh secara berlebihan, kulit terlalu banyak terlihat.";
 
 
         $promptForImageGen = "Edit foto orang ini sesuai deskripsi outfit berikut.
@@ -154,6 +155,7 @@ class ByteplusService
             ->post('https://ark.ap-southeast.bytepluses.com/api/v3/images/generations', [
                 'model' => 'seedream-4-5-251128',
                 'prompt' => $prompt,
+                'negative_prompt' => 'sitting, lying down, bending over, tight clothes, form-fitting outfit, body-hugging, revealing clothes, exposed skin, bare legs, bare arms, bare stomach, bare chest, bare back, visible thighs, cleavage, short skirt, short dress, crop top, transparent fabric, sexy pose, provocative pose, nsfw',
                 'image' => $imageUrl,
                 'sequential_image_generation' => 'auto',
                 'sequential_image_generation_options' => [
