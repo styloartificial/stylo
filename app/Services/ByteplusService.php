@@ -28,7 +28,7 @@ class ByteplusService
             DILARANG: pakaian yang menonjolkan lekukan tubuh secara berlebihan, kulit terlalu banyak terlihat.";
 
 
-        $promptForImageGen = "Edit foto orang ini sesuai deskripsi outfit berikut.
+        $promptForImageGen = "Edit foto orang ini sesuai deskripsi outfit berikut dan hasilkan 3 foto.
             WAJIB: pose berdiri tegak natural seperti foto katalog fashion (Uniqlo/Zara/H&M).
             DILARANG: pose duduk, berbaring, atau menonjolkan lekukan tubuh.
             DILARANG: paha, perut, atau punggung terlihat.
