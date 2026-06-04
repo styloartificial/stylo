@@ -92,6 +92,26 @@ class BuildPromptHelper
             YANG BOLEH DIUBAH: hanya pakaian dan aksesori.
 
             ==================================================
+            ⚠️⚠️⚠️ ATURAN POSE & KESOPANAN — WAJIB DIPATUHI — PRIORITAS TERTINGGI ⚠️⚠️⚠️
+            ==================================================
+
+            POSE:
+            ► WAJIB: Pose harus berdiri tegak, natural, dan sopan
+            ► WAJIB: Gaya berdiri boleh sedikit bervariasi (tangan di samping, tangan di pinggang, satu kaki sedikit maju) namun tetap sopan
+            ► DILARANG KERAS: Pose berbaring, duduk, membungkuk berlebihan, atau pose yang tidak wajar
+            ► DILARANG KERAS: Pose yang mengekspos atau menonjolkan bagian tubuh tertentu
+            ► DILARANG KERAS: Pose yang tidak sesuai norma kesopanan dan adab
+
+            KESOPANAN & ADAB:
+            ► WAJIB: Seluruh outfit harus sopan, tertutup, dan sesuai adab
+            ► WAJIB: Tidak boleh ada bagian tubuh yang terbuka selain wajah dan tangan
+            ► WAJIB: Pakaian harus longgar dan tidak ketat/transparan
+            ► DILARANG KERAS: Menampilkan kulit berlebihan (dada, perut, paha, punggung)
+            ► DILARANG KERAS: Pakaian yang terlalu ketat, transparan, atau provokatif
+            ► DILARANG KERAS: Konten yang mengandung unsur SARA atau tidak menghormati budaya dan agama
+            ► DILARANG KERAS: Outfit yang bertentangan dengan norma kesopanan lokal Indonesia
+
+            ==================================================
             PROFIL USER
             ==================================================
 
@@ -137,13 +157,13 @@ class BuildPromptHelper
             - Hijab   → aktifkan MODE HIJAB PENUH (lihat aturan di bawah)
 
             ==================================================
-            ⚠️ MODE HIJAB — ATURAN KRITIS (WAJIB DIPATUHI)
+            ⚠️⚠️⚠️ MODE HIJAB — ATURAN KRITIS — WAJIB DIPATUHI TANPA PENGECUALIAN ⚠️⚠️⚠️
             ==================================================
 
             Jika 'Hijab' dipilih:
 
             PENUTUPAN RAMBUT — PRIORITAS TERTINGGI:
-            ► SELURUH rambut WAJIB tertutup sempurna — tanpa pengecualian
+            ► SELURUH rambut WAJIB tertutup sempurna — tanpa pengecualian apapun
             ► Jika foto asli BELUM berhijab:
             - Buat hijab yang realistis dan menutupi 100% rambut
             - Tidak boleh ada garis rambut, helai rambut, atau tekstur rambut terlihat
@@ -152,7 +172,7 @@ class BuildPromptHelper
             - Pertahankan hijab, upgrade style sesuai preferensi user
             - Pastikan semua rambut tetap tertutup setelah pergantian style
 
-            PENUTUPAN TUBUH (semua wajib):
+            PENUTUPAN TUBUH (semua wajib tanpa terkecuali):
             ✓ Rambut  → tertutup penuh oleh hijab
             ✓ Leher   → tertutup
             ✓ Dada    → tertutup
@@ -160,7 +180,7 @@ class BuildPromptHelper
             ✓ Kaki    → bawahan panjang hingga mata kaki
             ✓ Siluet  → longgar dan sopan
 
-            SANGAT DILARANG:
+            SANGAT DILARANG — TIDAK BOLEH ADA DALAM HASIL GAMBAR:
             ✗ Rambut atau garis rambut terlihat
             ✗ Pakaian ketat
             ✗ Crop top / rok pendek / celana pendek
