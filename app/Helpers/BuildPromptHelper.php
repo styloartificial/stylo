@@ -92,26 +92,6 @@ class BuildPromptHelper
             YANG BOLEH DIUBAH: hanya pakaian dan aksesori.
 
             ==================================================
-            ⚠️⚠️⚠️ ATURAN POSE & KESOPANAN — WAJIB DIPATUHI — PRIORITAS TERTINGGI ⚠️⚠️⚠️
-            ==================================================
-
-            POSE:
-            ► WAJIB: Pose harus berdiri tegak, natural, dan sopan
-            ► WAJIB: Gaya berdiri boleh sedikit bervariasi (tangan di samping, tangan di pinggang, satu kaki sedikit maju) namun tetap sopan
-            ► DILARANG KERAS: Pose berbaring, duduk, membungkuk berlebihan, atau pose yang tidak wajar
-            ► DILARANG KERAS: Pose yang mengekspos atau menonjolkan bagian tubuh tertentu
-            ► DILARANG KERAS: Pose yang tidak sesuai norma kesopanan dan adab
-
-            KESOPANAN & ADAB:
-            ► WAJIB: Seluruh outfit harus sopan, tertutup, dan sesuai adab
-            ► WAJIB: Tidak boleh ada bagian tubuh yang terbuka selain wajah dan tangan
-            ► WAJIB: Pakaian harus longgar dan tidak ketat/transparan
-            ► DILARANG KERAS: Menampilkan kulit berlebihan (dada, perut, paha, punggung)
-            ► DILARANG KERAS: Pakaian yang terlalu ketat, transparan, atau provokatif
-            ► DILARANG KERAS: Konten yang mengandung unsur SARA atau tidak menghormati budaya dan agama
-            ► DILARANG KERAS: Outfit yang bertentangan dengan norma kesopanan lokal Indonesia
-
-            ==================================================
             PROFIL USER
             ==================================================
 
