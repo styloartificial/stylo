@@ -203,8 +203,6 @@ class BuildPromptHelper
             }
             ";
 
-        \Illuminate\Support\Facades\Log::info("prompt: {$prompt}");
-
         $imagesUrl = [
             $scan->img_url,
             $userDetail->img_url ?? null,
@@ -280,6 +278,9 @@ class BuildPromptHelper
 
             return $products;
         } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Error in BuildPromptHelper: " . $e->getMessage(), [
+                'stack' => $e->getTraceAsString(),
+            ]);
             throw $e;
         }
     }
