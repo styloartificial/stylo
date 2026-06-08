@@ -13,6 +13,7 @@ class ByteplusService
             'images_url' => $imagesUrl,
             'generate_images' => $generateImages,
         ]);
+        
 
         if (!$prompt) {
             throw new \InvalidArgumentException('Prompt is required');
@@ -34,6 +35,8 @@ class ByteplusService
             DILARANG: paha, perut, atau punggung terlihat.
             {$modestRule}
             " . ($analysis['summary'] ?? '');
+
+        \Illuminate\Support\Facades\Log::info("Prompt for image generation: " . $promptForImageGen);
         $images = self::generateImages($promptForImageGen, $imagesUrl[0], $generateImages);
 
         \Illuminate\Support\Facades\Log::info("BytePlusService result: " . json_encode([
