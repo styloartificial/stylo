@@ -167,7 +167,11 @@ class ByteplusService
                 'watermark' => false,
             ]);
 
-        echo "Image generation response: " . $response->body() . "\n";
+        $log = $response->json();
+        \Illuminate\Support\Facades\Log::info("BytePlus image generation response", [
+            'status' => $response->status(),
+            'body' => $log,
+        ]);
 
         $data = $response->json('data');
         return collect($data)->pluck('url')->values()->toArray();
