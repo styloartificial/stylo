@@ -51,6 +51,7 @@ class ScanController extends BaseController
                 S3Helper::getUrlFileS3("temp", $tempFileName)
             ];
             $result = ByteplusService::analyze($prompt, $promptImage);
+            \Illuminate\Support\Facades\Log::info("Analyzed image with BytePlusService", ['result' => $result]);
 
             S3Helper::removeFileTemp($tempFileName);
 
