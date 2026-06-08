@@ -217,7 +217,8 @@ class BuildPromptHelper
                 'prompt' => $prompt,
                 'images_url' => $imagesUrl,
             ]);
-            $result = ByteplusService::run($prompt, $imagesUrl, 3);
+            $isHijab = !empty($scanCategoryHijab);
+            $result = ByteplusService::run($prompt, $imagesUrl, 3, $isHijab);
 
             FirebaseLogHelper::logPromptCompleted($db, $ticketId);
 

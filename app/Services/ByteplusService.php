@@ -6,12 +6,13 @@ use Illuminate\Support\Facades\Http;
 
 class ByteplusService
 {
-    public static function run(string $prompt, array $imagesUrl = [], int $generateImages = 1): array
+    public static function run(string $prompt, array $imagesUrl = [], int $generateImages = 1, bool $isHijab = false): array
     {
         \Illuminate\Support\Facades\Log::info("Payload to BytePlusService", [
             'prompt' => $prompt,
             'images_url' => $imagesUrl,
             'generate_images' => $generateImages,
+            'is_hijab' => $isHijab,
         ]);
         
 
@@ -21,7 +22,7 @@ class ByteplusService
 
         $analysis = self::analyze($prompt, $imagesUrl);
 
-        $isHijab = !empty($scanCategoryHijab);
+        // $isHijab = !empty($scanCategoryHijab);
 
         $modestRule = $isHijab
             ? "WAJIB: outfit hijab syari — seluruh rambut tertutup hijab, leher tertutup, lengan panjang, bawahan panjang hingga mata kaki, pakaian longgar tidak membentuk tubuh. DILARANG: rambut/garis rambut terlihat, pakaian ketat, transparan, atau kulit terlihat selain wajah dan tangan."
