@@ -146,11 +146,6 @@ class ByteplusService
 
     public static function generateImages(string $prompt, string $imageUrl, int $count): array
     {
-        \Illuminate\Support\Facades\Log::info("Generating images with BytePlusService", [
-            'prompt' => $prompt,
-            'image_url' => $imageUrl,
-            'count' => $count,
-        ]);
         $apiKey = config('services.openai.key');
 
         $response = Http::withHeaders([
@@ -172,8 +167,9 @@ class ByteplusService
                 'watermark' => false,
             ]);
 
+        echo "Image generation response: " . $response->body() . "\n";
+
         $data = $response->json('data');
-        \Illuminate\Support\Facades\Log::info("Generated images with BytePlusService", ['data' => $data]);
         return collect($data)->pluck('url')->values()->toArray();
     }
 }
