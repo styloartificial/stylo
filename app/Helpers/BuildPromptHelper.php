@@ -213,6 +213,9 @@ class BuildPromptHelper
         try {
             FirebaseLogHelper::logPromptSent($db, $ticketId);
             $isHijab = !empty($scanCategoryHijab);
+            \Illuminate\Support\Facades\Log::info("TESTTESTESTEST12313", [
+                'is_hijab' => $isHijab,
+            ]);
 
             \Illuminate\Support\Facades\Log::info("Payload to BytePlusService", [
                 'prompt' => $prompt,
