@@ -14,7 +14,6 @@ class ByteplusService
             'generate_images' => $generateImages,
             'is_hijab' => $isHijab,
         ]);
-        
 
         if (!$prompt) {
             throw new \InvalidArgumentException('Prompt is required');

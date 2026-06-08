@@ -212,12 +212,15 @@ class BuildPromptHelper
 
         try {
             FirebaseLogHelper::logPromptSent($db, $ticketId);
+            $isHijab = !empty($scanCategoryHijab);
 
             \Illuminate\Support\Facades\Log::info("Payload to BytePlusService", [
                 'prompt' => $prompt,
                 'images_url' => $imagesUrl,
+                'generate_images' => 3,
+                'is_hijab' => $isHijab,
             ]);
-            $isHijab = !empty($scanCategoryHijab);
+            
             $result = ByteplusService::run($prompt, $imagesUrl, 3, $isHijab);
 
             FirebaseLogHelper::logPromptCompleted($db, $ticketId);
