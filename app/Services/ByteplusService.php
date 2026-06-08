@@ -8,7 +8,7 @@ class ByteplusService
 {
     public static function run(string $prompt, array $imagesUrl = [], int $generateImages = 1, bool $isHijab = false): array
     {
-        \Illuminate\Support\Facades\Log::info("Payload to BytePlusService", [
+        \Illuminate\Support\Facades\Log::info("[BYTEPLUSSERVICE] Payload to BytePlusService", [
             'prompt' => $prompt,
             'images_url' => $imagesUrl,
             'generate_images' => $generateImages,
