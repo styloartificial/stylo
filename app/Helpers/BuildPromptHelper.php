@@ -131,8 +131,8 @@ class BuildPromptHelper
             ATURAN PER ITEM
             ==================================================
 
-            - Atasan  → ganti atasan saja
-            - Bawahan → ganti bawahan saja
+            - Atasan  → hapus & ganti atasan saja
+            - Bawahan → hapus & ganti bawahan saja
             - Outer   → tambahkan outer yang sesuai
             - Hijab   → aktifkan MODE HIJAB PENUH (lihat aturan di bawah)
 
@@ -190,9 +190,15 @@ class BuildPromptHelper
             Untuk setiap produk, berikan data SPESIFIK dan ACTIONABLE untuk keperluan pencarian produk nyata.
             Bayangkan kamu sedang menulis search query untuk marketplace (Tokopedia, Shopee, Zalora).
 
+            Field 'summary' WAJIB mengikuti struktur berikut:
+            1. Analisis singkat profil user (warna kulit, bentuk tubuh, proporsi tinggi-berat)
+            2. Alasan kenapa outfit yang dipilih cocok untuk profil tersebut
+            3. Tips styling spesifik (mis. warna yang mempercantik kulit)
+            4. Rekomendasi produk yang sesuai dengan outfit yang dihasilkan
+
             {
             \"title\": \"judul outfit\",
-            \"summary\": \"deskripsi detail outfit baru\",
+            \"summary\": \"rekomendasi dan penjelasan outfit berbasis profil user dan outfit yang diperbarui\",
             \"products\": [
                 {
                 \"name\": \"[jenis item] [bahan/material] [model/cut] [warna spesifik] — contoh: kemeja linen oversized lengan panjang putih tulang\",
