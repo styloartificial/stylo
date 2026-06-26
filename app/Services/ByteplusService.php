@@ -34,7 +34,7 @@ class ByteplusService
             DILARANG: pose duduk, berbaring, atau menonjolkan lekukan tubuh.
             DILARANG: paha, perut, atau punggung terlihat.
             {$modestRule}
-            " . ($analysis['summary'] ?? '');
+            " . ($analysis['visual_prompt'] ?? $analysis['summary'] ?? '');
 
         \Illuminate\Support\Facades\Log::info("Prompt for image generation: " . $promptForImageGen);
         $images = self::generateImages($promptForImageGen, $imagesUrl[0], $generateImages);

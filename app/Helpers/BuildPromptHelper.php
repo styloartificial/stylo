@@ -132,7 +132,7 @@ class BuildPromptHelper
             ==================================================
 
             - Atasan  → hapus & ganti atasan saja
-            - Bawahan → hapus & ganti bawahan saja
+            - Bawahan → hapus &ganti bawahan saja
             - Outer   → tambahkan outer yang sesuai
             - Hijab   → aktifkan MODE HIJAB PENUH (lihat aturan di bawah)
 
@@ -190,15 +190,39 @@ class BuildPromptHelper
             Untuk setiap produk, berikan data SPESIFIK dan ACTIONABLE untuk keperluan pencarian produk nyata.
             Bayangkan kamu sedang menulis search query untuk marketplace (Tokopedia, Shopee, Zalora).
 
-            Field 'summary' WAJIB mengikuti struktur berikut:
-            1. Analisis singkat profil user (warna kulit, bentuk tubuh, proporsi tinggi-berat)
-            2. Alasan kenapa outfit yang dipilih cocok untuk profil tersebut
-            3. Tips styling spesifik (mis. warna yang mempercantik kulit)
-            4. Rekomendasi produk yang sesuai dengan outfit yang dihasilkan
+            Field 'summary' WAJIB :
+            -  Analisis singkat profil user (warna kulit, bentuk tubuh, proporsi tinggi-berat)
+            -  Alasan kenapa outfit yang dipilih cocok untuk profil tersebut
+            -  Tips styling spesifik (mis. warna yang mempercantik kulit)
+            -  Rekomendasi produk yang sesuai dengan outfit yang dihasilkan
+            - Gunakan sudut pandang orang kedua (kamu, tubuhmu, kulitmu)
+            - Jelaskan KENAPA outfit ini cocok untuk profil user, bukan WHAT yang dipakai
+            - Hubungkan setiap pilihan outfit dengan warna kulit, bentuk tubuh, atau occasion
+            - DILARANG: hanya menyebutkan item pakaian tanpa alasan
+            - DILARANG: format seperti → outfit ini terdiri dari...
+            - Contoh tone yang BENAR:
+                \"Warna kulitmu yang sangat terang sangat cocok dipadukan dengan warna coklat hangat
+                seperti ini — warna earth tone terbukti menonjolkan kecerahan kulit tanpa terlihat
+                pucat. Potongan mock neck pada blouse ini juga mempertegas bentuk tubuh hourglass-mu
+                secara elegan tanpa terlalu mencolok, sangat pas untuk suasana kantor yang profesional.
+                Untuk memaksimalkan tampilanmu, coba padukan dengan rok pensil hitam agar lekukan
+                pinggangmu makin terdefinisi dengan rapi.\"
+
+            Field 'visual_prompt' WAJIB:
+            - Ditulis dalam bahasa Inggris
+            - Berisi deskripsi visual pakaian yang sangat detail dan presisi untuk keperluan image generation
+            - Sebutkan: warna spesifik, bahan, potongan/cut, panjang, dan detail visual lainnya
+            - Jika user mengisi outfit_detail → jadikan itu sebagai dasar utama, jangan tambahkan
+            elemen yang tidak disebutkan user
+            - Jika outfit_detail kosong → tentukan sendiri berdasarkan item, style, occasion,
+            dan profil user
+            - Contoh: \"oversized off-white linen shirt with rolled sleeves, wide-leg beige trousers
+            with a relaxed fit, minimal clean look, earth tone palette, casual chic style\"
 
             {
             \"title\": \"judul outfit\",
-            \"summary\": \"rekomendasi dan penjelasan outfit berbasis profil user dan outfit yang diperbarui\",
+            \"summary\": \"satu paragraf rekomendasi mengalir berbasis profil user seperti contoh di atas\",
+            \"visual_prompt\": \"deskripsi visual outfit dalam bahasa Inggris untuk image generation\",
             \"products\": [
                 {
                 \"name\": \"[jenis item] [bahan/material] [model/cut] [warna spesifik] — contoh: kemeja linen oversized lengan panjang putih tulang\",
