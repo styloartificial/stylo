@@ -219,13 +219,20 @@ class BuildPromptHelper
             - Contoh: \"oversized off-white linen shirt with rolled sleeves, wide-leg beige trousers
             with a relaxed fit, minimal clean look, earth tone palette, casual chic style\"
 
+            Field 'products' WAJIB:
+            - Semua produk WAJIB sesuai gender user: $userGender
+            " . ($userGender == "MALE"
+                ? "- DILARANG merekomendasikan produk perempuan (blouse, rok, dress, gamis, hijab, dll)\n            - Gunakan terminologi produk pria: kemeja pria, blazer pria, celana chino pria, dst"
+                : "- DILARANG merekomendasikan produk laki-laki\n            - Gunakan terminologi produk wanita: blouse, rok, dress, celana kulot wanita, dst") . "
+
+
             {
             \"title\": \"judul outfit\",
             \"summary\": \"satu paragraf rekomendasi mengalir berbasis profil user seperti contoh di atas\",
             \"visual_prompt\": \"deskripsi visual outfit dalam bahasa Inggris untuk image generation\",
             \"products\": [
                 {
-                \"name\": \"[jenis item] [bahan/material] [model/cut] [warna spesifik] — contoh: kemeja linen oversized lengan panjang putih tulang\",
+                \"name\": \"[gender: $userGender] [jenis item] [bahan/material] [model/cut] [warna spesifik] — contoh: " . ($userGender == "MALE" ? "kemeja flannel slim fit lengan panjang navy blue pria" : "blouse linen oversized lengan panjang putih tulang wanita") . "\",
                 \"brand\": \"nama brand (isi 'unbranded' jika tidak spesifik)\",
                 \"category\": \"kategori produk\"
                 }
