@@ -145,13 +145,14 @@ class ProfileController extends BaseController
                 'height'       => ['nullable', 'numeric'],
                 'weight'       => ['nullable', 'numeric'],
                 'skin_tone_id' => ['nullable', 'exists:m_skin_tones,id'],
+                'body_shape_id'  => ['nullable', 'exists:m_body_shapes,id'], 
             ]);
 
             if ($request->has('name')) {
                 $user->update(['name' => $request->name]);
             }
 
-            $detailData = $request->only(['gender', 'height', 'weight', 'skin_tone_id']);
+            $detailData = $request->only(['gender', 'height', 'weight', 'skin_tone_id', 'body_shape_id']);
 
             if (!empty($detailData)) {
                 $user->userDetail()->updateOrCreate(
