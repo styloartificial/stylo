@@ -76,21 +76,32 @@ class BuildPromptHelper
         $prompt = "
             Kamu adalah AI fashion stylist dan virtual try-on expert.
 
+           ==================================================
+            ⚠️ ATURAN PALING PENTING — WAJIB DIPATUHI ⚠️
             ==================================================
-            TUGAS
-            ==================================================
 
-            Dari foto yang diberikan, ganti HANYA outfit sesuai preferensi user.
+            1. PERTAHANKAN (tidak boleh diubah):
+               - Wajah & identitas user
+               - Bentuk & postur tubuh asli
+               - Pose asli
+               - Background & framing foto
+               - Pencahayaan
 
-            PERTAHANKAN (JANGAN diubah):
-            - Wajah & identitas
-            - Bentuk & postur tubuh
-            - Pose
-            - Background & framing foto
-            - Pencahayaan
+            2. YANG BOLEH DIUBAH: hanya pakaian dan aksesori yang dikenakan.
 
-            YANG BOLEH DIUBAH: hanya pakaian dan aksesori.
+            " . (!empty($scanCategoryHijab) ? "
+            3. MODE HIJAB PENUH — PRIORITAS TERTINGGI:
+               PASTIKAN seluruh rambut tertutup sempurna oleh hijab — tidak boleh ada helai atau garis rambut terlihat.
+               PASTIKAN leher, dada, lengan (lengan panjang), dan kaki (bawahan panjang hingga mata kaki) tertutup.
+               PASTIKAN siluet pakaian longgar dan sopan — tidak ketat, tidak transparan.
+               PASTIKAN hanya wajah dan tangan yang terlihat.
+               PASTIKAN hijab tampak realistis, natural, rapi, dan menyatu dengan gaya outfit.
 
+            " : "
+            3. MODE SOPAN:
+               PASTIKAN pakaian sopan dan rapi — tidak terlalu ketat, tidak terlalu terbuka.
+               PASTIKAN tidak ada area kulit sensitif yang terlihat (paha, perut, punggung).
+            ") . "
             ==================================================
             PROFIL USER
             ==================================================
@@ -113,123 +124,84 @@ class BuildPromptHelper
             ⚠️ DETAIL OUTFIT DARI USER — PRIORITAS TINGGI
             ==================================================
 
-            User telah memberikan instruksi spesifik berikut. WAJIB dipatuhi sepenuhnya:
+            User telah memberikan instruksi spesifik berikut. WAJIB dipatuhi:
 
             \"$outfitDetail\"
 
             Panduan membaca instruksi user:
-            ► Jika user menyebut sesuatu yang DIA SUKA     → wajib diterapkan pada outfit
-            ► Jika user menyebut sesuatu yang TIDAK DIA SUKA → wajib dihindari pada outfit
-            ► Jika user menyebut warna spesifik             → gunakan warna tersebut
-            ► Jika user menyebut item/bahan/model spesifik  → terapkan secara akurat
-            ► Jangan mengabaikan satu pun detail dari instruksi user di atas
+            ► Yang DISUKAI user → wajib diterapkan pada outfit
+            ► Yang TIDAK DISUKAI user → wajib dihindari
+            ► Warna spesifik yang disebut → gunakan warna tersebut
+            ► Item/bahan/model spesifik → terapkan secara akurat
+            ► Jika user menyebut HANYA item tertentu → hanya ubah item itu, PERTAHANKAN item lain yang ada di foto
+            ► Jika user tidak menyebut item spesifik → generate outfit lengkap
+            ► Jangan abaikan satu pun detail dari user
 
             ==================================================
             " : "") . "
+
+            ==================================================
+            PANDUAN WARNA & SILUET
+            ==================================================
+
+            - Pilih warna yang harmonis dengan warna kulit: $userSkinTone
+            - Pilih siluet yang sesuai bentuk tubuh: $userBodyShape
+            - Sesuaikan dengan occasion dan gaya yang dipilih
+            - Outfit harus tampak realistis, tidak ada distorsi kain, tangan/wajah tidak cacat
 
             ==================================================
             ATURAN PER ITEM
             ==================================================
 
             - Atasan  → hapus & ganti atasan saja
-            - Bawahan → hapus &ganti bawahan saja
+            - Bawahan → hapus & ganti bawahan saja
             - Outer   → tambahkan outer yang sesuai
-            - Hijab   → aktifkan MODE HIJAB PENUH (lihat aturan di bawah)
+            - Hijab   → aktifkan MODE HIJAB PENUH (lihat aturan di atas)
 
             ==================================================
-            ⚠️⚠️⚠️ MODE HIJAB — ATURAN KRITIS — WAJIB DIPATUHI TANPA PENGECUALIAN ⚠️⚠️⚠️
+            LANGKAH SEBELUM OUTPUT (PIKIRKAN DULU)
             ==================================================
 
-            Jika 'Hijab' dipilih:
-
-            PENUTUPAN RAMBUT — PRIORITAS TERTINGGI:
-            ► SELURUH rambut WAJIB tertutup sempurna — tanpa pengecualian apapun
-            ► Jika foto asli BELUM berhijab:
-            - Buat hijab yang realistis dan menutupi 100% rambut
-            - Tidak boleh ada garis rambut, helai rambut, atau tekstur rambut terlihat
-            - Perlakukan rambut yang terlihat seperti aurat yang harus ditutup
-            ► Jika foto asli SUDAH berhijab:
-            - Pertahankan hijab, upgrade style sesuai preferensi user
-            - Pastikan semua rambut tetap tertutup setelah pergantian style
-
-            PENUTUPAN TUBUH (semua wajib tanpa terkecuali):
-            ✓ Rambut  → tertutup penuh oleh hijab
-            ✓ Leher   → tertutup
-            ✓ Dada    → tertutup
-            ✓ Lengan  → hanya lengan panjang
-            ✓ Kaki    → bawahan panjang hingga mata kaki
-            ✓ Siluet  → longgar dan sopan
-
-            SANGAT DILARANG — TIDAK BOLEH ADA DALAM HASIL GAMBAR:
-            ✗ Rambut atau garis rambut terlihat
-            ✗ Pakaian ketat
-            ✗ Crop top / rok pendek / celana pendek
-            ✗ Pakaian tanpa lengan
-            ✗ Kain transparan atau tembus pandang
-            ✗ Kulit terlihat selain wajah dan tangan
-
-            EKSEKUSI HIJAB:
-            - Tampak realistis, natural, dan rapi
-            - Modis dan sesuai dengan keseluruhan outfit
-            - Menyatu dengan warna dan gaya outfit
+            Sebelum menulis JSON output, analisis secara berurutan:
+            1. Profil user → warna kulit, bentuk tubuh, proporsi tinggi-berat
+            2. Palet warna terbaik untuk profil tersebut
+            3. Siluet & potongan yang paling cocok dengan bentuk tubuh
+            4. Pastikan SEMUA aturan hijab/sopan di atas terpenuhi (jika berlaku)
+            5. Pastikan SEMUA preferensi user terakomodasi
+            6. Baru tulis JSON output
 
             ==================================================
-            PANDUAN WARNA & FIT
+            OUTPUT — HANYA JSON VALID (tanpa teks/tanda lain)
             ==================================================
 
-            - Pilih warna yang cocok dengan warna kulit : $userSkinTone
-            - Pilih siluet yang sesuai bentuk tubuh     : $userBodyShape
-            - Sesuaikan dengan occasion dan gaya yang dipilih
-            - Outfit harus tampak realistis di tubuh — tidak ada distorsi kain,
-            tangan atau wajah tidak cacat, tidak ada anggota tubuh yang terpotong
+            Untuk setiap produk, berikan data SPESIFIK dan ACTIONABLE — bayangkan kamu menulis search query untuk marketplace (Tokopedia, Shopee, Zalora).
 
-            ==================================================
-            OUTPUT — JSON VALID SAJA (tanpa teks tambahan)
-            ==================================================
-
-            Untuk setiap produk, berikan data SPESIFIK dan ACTIONABLE untuk keperluan pencarian produk nyata.
-            Bayangkan kamu sedang menulis search query untuk marketplace (Tokopedia, Shopee, Zalora).
-
-            Field 'summary' WAJIB :
-            -  Analisis singkat profil user (warna kulit, bentuk tubuh, proporsi tinggi-berat)
-            -  Alasan kenapa outfit yang dipilih cocok untuk profil tersebut
-            -  Tips styling spesifik (mis. warna yang mempercantik kulit)
-            -  Rekomendasi produk yang sesuai dengan outfit yang dihasilkan
+            Field 'summary' WAJIB:
+            - Analisis singkat profil user & alasan outfit cocok
             - Gunakan sudut pandang orang kedua (kamu, tubuhmu, kulitmu)
-            - Jelaskan KENAPA outfit ini cocok untuk profil user, bukan WHAT yang dipakai
-            - Hubungkan setiap pilihan outfit dengan warna kulit, bentuk tubuh, atau occasion
-            - DILARANG: hanya menyebutkan item pakaian tanpa alasan
-            - DILARANG: format seperti → outfit ini terdiri dari...
+            - Jelaskan KENAPA outfit ini cocok, bukan WHAT yang dipakai
+            - Hubungkan pilihan outfit dengan warna kulit, bentuk tubuh, dan occasion
+            - DILARANG menyebutkan item tanpa alasan
             - Contoh tone yang BENAR:
-                \"Warna kulitmu yang sangat terang sangat cocok dipadukan dengan warna coklat hangat
-                seperti ini — warna earth tone terbukti menonjolkan kecerahan kulit tanpa terlihat
-                pucat. Potongan mock neck pada blouse ini juga mempertegas bentuk tubuh hourglass-mu
-                secara elegan tanpa terlalu mencolok, sangat pas untuk suasana kantor yang profesional.
-                Untuk memaksimalkan tampilanmu, coba padukan dengan rok pensil hitam agar lekukan
-                pinggangmu makin terdefinisi dengan rapi.\"
+              \"Warna kulitmu yang sangat terang sangat cocok dipadukan dengan warna coklat hangat seperti ini — warna earth tone terbukti menonjolkan kecerahan kulit tanpa terlihat pucat. Potongan mock neck pada blouse ini juga mempertegas bentuk tubuh hourglass-mu secara elegan tanpa terlalu mencolok, sangat pas untuk suasana kantor yang profesional.\"
 
             Field 'visual_prompt' WAJIB:
-            - Ditulis dalam bahasa Inggris
-            - Berisi deskripsi visual pakaian yang sangat detail dan presisi untuk keperluan image generation
-            - Sebutkan: warna spesifik, bahan, potongan/cut, panjang, dan detail visual lainnya
-            - Jika user mengisi outfit_detail → jadikan itu sebagai dasar utama, jangan tambahkan
-            elemen yang tidak disebutkan user
-            - Jika outfit_detail kosong → tentukan sendiri berdasarkan item, style, occasion,
-            dan profil user
-            - Contoh: \"oversized off-white linen shirt with rolled sleeves, wide-leg beige trousers
-            with a relaxed fit, minimal clean look, earth tone palette, casual chic style\"
+            - Ditulis dalam BAHASA INGGRIS
+            - Berisi deskripsi VISUAL pakaian yang detail dan presisi untuk image generation
+            - Sebutkan: warna spesifik, bahan, potongan/cut, panjang, detail visual
+            - Jika user mengisi outfit_detail → jadikan sebagai acuan utama, tapi TETAP sesuaikan warna & siluet dengan profil user
+            - Contoh: \"oversized off-white linen shirt with rolled sleeves, wide-leg beige trousers with a relaxed fit, minimal clean look, earth tone palette, casual chic style\"
 
             Field 'products' WAJIB:
-            - Semua produk WAJIB sesuai gender user: $userGender
+            - Semua produk WAJIB sesuai gender: $userGender
             " . ($userGender == "MALE"
-                ? "- DILARANG merekomendasikan produk perempuan (blouse, rok, dress, gamis, hijab, dll)\n            - Gunakan terminologi produk pria: kemeja pria, blazer pria, celana chino pria, dst"
-                : "- DILARANG merekomendasikan produk laki-laki\n            - Gunakan terminologi produk wanita: blouse, rok, dress, celana kulot wanita, dst") . "
-
+                ? "- GUNAKAN terminologi produk pria: kemeja pria, blazer pria, celana chino pria, dst.\n            - DILARANG produk wanita (blouse, rok, dress, gamis, hijab, dll)"
+                : "- GUNAKAN terminologi produk wanita: blouse, rok, dress, celana kulot wanita, dst.\n            - DILARANG produk laki-laki") . "
 
             {
-            \"title\": \"judul outfit\",
-            \"summary\": \"satu paragraf rekomendasi mengalir berbasis profil user seperti contoh di atas\",
-            \"visual_prompt\": \"deskripsi visual outfit dalam bahasa Inggris untuk image generation\",
+            \"title\": \"judul outfit yang catchy dan deskriptif\",
+            \"summary\": \"satu paragraf rekomendasi mengalir seperti contoh di atas\",
+            \"visual_prompt\": \"deskripsi visual outfit dalam BAHASA INGGRIS untuk image generation\",
             \"products\": [
                 {
                 \"name\": \"[gender: $userGender] [jenis item] [bahan/material] [model/cut] [warna spesifik] — contoh: " . ($userGender == "MALE" ? "kemeja flannel slim fit lengan panjang navy blue pria" : "blouse linen oversized lengan panjang putih tulang wanita") . "\",
@@ -239,6 +211,7 @@ class BuildPromptHelper
             ]
             }
             ";
+
 
         $imagesUrl = [
             $scan->img_url,

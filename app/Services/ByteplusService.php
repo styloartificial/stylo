@@ -21,18 +21,15 @@ class ByteplusService
 
         $analysis = self::analyze($prompt, $imagesUrl);
 
-        // $isHijab = !empty($scanCategoryHijab);
-
         $modestRule = $isHijab
-            ? "WAJIB: outfit hijab syari — seluruh rambut tertutup hijab, leher tertutup, lengan panjang, bawahan panjang hingga mata kaki, pakaian longgar tidak membentuk tubuh. DILARANG: rambut/garis rambut terlihat, pakaian ketat, transparan, atau kulit terlihat selain wajah dan tangan."
-            : "WAJIB: pakaian sopan dan rapi sesuai adab — tidak terlalu ketat, tidak terlalu terbuka. 
-            DILARANG: pakaian yang menonjolkan lekukan tubuh secara berlebihan, kulit terlalu banyak terlihat.";
+            ? "REQUIRED: syar'i hijab outfit — all hair covered by hijab, neck covered, long sleeves, ankle-length pants/skirt, loose clothing not hugging the body. PROHIBITED: hair/hairline visible, tight clothing, transparent fabric, skin visible except face and hands."
+            : "REQUIRED: modest and neat clothing — not too tight, not too revealing. PROHIBITED: clothing that overly emphasizes body curves, too much exposed skin.";
 
 
-        $promptForImageGen = "Edit foto orang ini sesuai deskripsi outfit berikut dan hasilkan 3 foto.
-            WAJIB: pose berdiri tegak natural seperti foto katalog fashion (Uniqlo/Zara/H&M).
-            DILARANG: pose duduk, berbaring, atau menonjolkan lekukan tubuh.
-            DILARANG: paha, perut, atau punggung terlihat.
+        $promptForImageGen = "Edit this person's photo according to the outfit description below and generate 3 photos.
+            REQUIRED: natural standing pose like a fashion catalog shoot (Uniqlo/Zara/H&M style).
+            PROHIBITED: sitting, lying down, or emphasizing body curves.
+            PROHIBITED: thighs, stomach, or back visible.
             {$modestRule}
             " . ($analysis['visual_prompt'] ?? $analysis['summary'] ?? '');
 
