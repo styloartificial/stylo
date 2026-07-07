@@ -3,7 +3,7 @@
 
         <div class="text-center mb-12 md:mb-16">
             <h2 class="fade-up text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900">
-                How it works
+                Cara Kerja Stylo AI
             </h2>
         </div>
 
@@ -18,11 +18,11 @@
                 </div>
                 <div>
                     <h3 class="text-xl md:text-xl font-bold text-gray-900 mb-3 md:mb-4">
-                        Snap a photo
+                        Ambil atau Unggah Foto
                     </h3>
                     
                     <p class="text-base md:text-base text-gray-600 leading-relaxed">
-                        Upload a picture of yourself or a clothing item you want to style.
+                        Unggah foto diri Anda dengan pakaian yang ingin Anda padukan.
                     </p>
                 </div>
             </div>
@@ -36,11 +36,11 @@
                 </div>
                 <div>
                     <h3 class="text-xl md:text-xl font-bold text-gray-900 mb-3 md:mb-4">
-                        Set your preferences
+                        Atur preferens Anda
                     </h3>
 
                     <p class="text-base md:text-base text-gray-600 leading-relaxed">
-                        Tell us the occasion date night, work, or casual weekend.
+                        Beri tahu kami untuk acara apa outfit ini digunakan, seperti kencan, bekerja, atau akhir pekan santai.
                     </p>
                 </div>
             </div>
@@ -54,11 +54,11 @@
                 </div>
                 <div>
                     <h3 class="text-xl md:text-xl font-bold text-gray-900 mb-3 md:mb-4">
-                        Get styled
+                        Dapatkan rekomendasi gaya Anda.
                     </h3>
 
                     <p class="text-base md:text-base text-gray-600 leading-relaxed">
-                        Receive 3-5 perfect outfit combinations and shop the links.
+                       Dapatkan 3–5 kombinasi outfit yang sesuai beserta tautan untuk membelinya.
                     </p>
                 </div>
             </div>

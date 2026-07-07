@@ -8,11 +8,11 @@
         <div class="zoom-in max-w-5xl mx-auto bg-linear-to-br from-gray-900 to-gray-800 rounded-2xl md:rounded-3xl lg:rounded-[3rem] p-8 md:p-12 text-center shadow-2xl">
             
             <h2 class="text-xl sm:text-xl md:text-2xl font-bold text-white mb-4 md:mb-5 lg:mb-6 leading-tight px-4">
-                Ready to upgrade your style?
+                Siap meningkatkan gaya berpakaian Anda?
             </h2>
 
             <p class="text-sm sm:text-sm md:text-base text-gray-300 mb-6 md:mb-8 lg:mb-10 max-w-2xl mx-auto leading-relaxed px-4">
-                Join thousands of users dressing smarter with Stylo AI.
+                Bergabunglah dengan Stylo AI untuk tampil lebih percaya diri
             </p>
 
             <div class="flex justify-center px-4">

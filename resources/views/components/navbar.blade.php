@@ -11,10 +11,10 @@
 
             <div class="hidden md:flex md:items-center md:space-x-8">
                 <a href="#features" class="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium transition-colors">
-                    Features
+                    Fitur
                 </a>
                 <a href="#how-it-works" class="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium transition-colors">
-                    How it works
+                    Cara Kerja
                 </a>
                 <a href="#download" class="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium transition-colors">
                     Download
@@ -27,7 +27,7 @@
                         class="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-purple-500"
                         aria-controls="mobile-menu"
                         aria-expanded="false">
-                    <span class="sr-only">Open main menu</span>
+                    <span class="sr-only">Buka Menu Utama</span>
                     <!-- Hamburger icon -->
                     <svg id="hamburger-icon" class="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
@@ -45,10 +45,10 @@
     <div class="hidden md:hidden" id="mobile-menu">
         <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-gray-200 bg-white">
             <a href="#features" class="text-gray-700 hover:text-gray-900 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium mobile-menu-link">
-                Features
+                Fitur
             </a>
             <a href="#how-it-works" class="text-gray-700 hover:text-gray-900 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium mobile-menu-link">
-                How it works
+                Cara Kerja
             </a>
             <a href="#download" class="text-gray-700 hover:text-gray-900 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium mobile-menu-link">
                 Download

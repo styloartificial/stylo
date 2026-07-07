@@ -23,12 +23,12 @@
             </h1>
 
             <p class="text-lg sm:text-xl md:text-xl text-gray-600 mb-10 max-w-3xl mx-auto leading-relaxed">
-                Scan your wardrobe, get personalized outfit ideas, and shop the look instantly.
+                Unggah foto diri Anda dengan pakaian yang ingin Anda padukan, dapatkan rekomendasi outfit yang dipersonalisasi, lalu beli dengan link yang tersedia secara instan.
             </p>
 
             <div class="flex justify-center">
                 <a href="<?php echo e($androidUrl); ?>" target="_blank" class="inline-block bg-gray-900 hover:bg-gray-800 text-white text-base md:text-lg font-semibold px-8 md:px-12 py-4 md:py-5 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                    Get Started for Free
+                    Mulai Gratis Sekarang
                 </a>
             </div>
         </div>

@@ -13,8 +13,8 @@
                     <span class="text-xl font-bold text-gray-900">Stylo AI</span>
                 </div>
                 <p class="text-sm text-gray-500 leading-relaxed">
-                    Your personal AI stylist in your pocket.<br>
-                    Look good, feel good, every day.
+                    Asisten outfit AI pribadi di genggaman Anda<br>
+                    Tampil percaya diri, merasa lebih baik, setiap hari
                 </p>
             </div>
 
@@ -26,12 +26,12 @@
                     <ul class="space-y-3">
                         <li>
                             <a href="#" class="text-sm text-gray-500 hover:text-gray-900 transition-colors">
-                                About
+                                Tentang
                             </a>
                         </li>
                         <li>
                             <a href="#" class="text-sm text-gray-500 hover:text-gray-900 transition-colors">
-                                Contact
+                                Kontak
                             </a>
                         </li>
                     </ul>
@@ -39,11 +39,11 @@
 
                 <!-- Product Links -->
                 <div>
-                    <h3 class="text-sm font-semibold text-gray-900 mb-4">Product</h3>
+                    <h3 class="text-sm font-semibold text-gray-900 mb-4">Produk</h3>
                     <ul class="space-y-3">
                         <li>
                             <a href="#features" class="text-sm text-gray-500 hover:text-gray-900 transition-colors">
-                                Features
+                                Fitur
                             </a>
                         </li>
                         <li>

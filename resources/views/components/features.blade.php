@@ -4,10 +4,10 @@
 
         <div class="fade-up text-center max-w-3xl mx-auto mb-12 md:mb-16">
             <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 md:mb-6">
-                Why use Stylo?
+                Mengapa Memilih Stylo?
             </h2>
             <p class="text-base md:text-lg text-gray-600 leading-relaxed">
-                We combine generative AI with real-time shopping data to upgrade your style.
+                Kami menggabungkan AI generatif dengan menyajikan data rekomendasi secara real-time dari Ecommerce untuk membantu meningkatkan gaya berpakaian Anda.
             </p>
         </div>
 
@@ -24,10 +24,10 @@
                     </div>
                 </div>
                 <h3 class="text-xl md:text-xl font-bold text-gray-900 mb-3 md:mb-4">
-                    Scan & Analyse
+                    Pindai & Analisis
                 </h3>
                 <p class="text-base md:text-base text-gray-600 leading-relaxed">
-                    Take a photo of any clothing item. Our AI identifies style, fabric, and occasion in seconds.
+                    Ambil foto dengan pakaian. AI kami akan mengenali item dan kecocokan penggunaannya serta gaya yang anda suka. 
                 </p>
             </div>
 
@@ -41,10 +41,10 @@
                     </div>
                 </div>
                 <h3 class="text-xl md:text-xl font-bold text-gray-900 mb-3 md:mb-4">
-                    Generate Looks
+                    Hasilkan Rekomendasi Outfit
                 </h3>
                 <p class="text-base md:text-base text-gray-600 leading-relaxed">
-                    Get complete outfit recommendations that match your personal style and body type.
+                    Dapatkan rekomendasi outfit lengkap yang disesuaikan dengan gaya pribadi dan bentuk tubuh Anda.
                 </p>
             </div>
 
@@ -58,10 +58,10 @@
                     </div>
                 </div>
                 <h3 class="text-xl md:text-xl font-bold text-gray-900 mb-3 md:mb-4">
-                    Shop Instantly
+                    Belanja Sekarang
                 </h3>
                 <p class="text-base md:text-base text-gray-600 leading-relaxed">
-                    Love the look? We find the exact or similar items from top stores so you can buy them now.
+                    Suka dengan tampilannya? Kami akan menemukan produk yang sama atau serupa dari berbagai toko terpercaya sehingga Anda dapat langsung membelinya.
                 </p>
             </div>
 
