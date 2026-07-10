@@ -18,6 +18,7 @@ use App\Http\Requests\ValidateImageByProfileGenderRequest;
 use App\Models\ScanItemCategory;
 use App\Services\ByteplusService;
 use App\Jobs\ProcessGetRecommendationStyle;
+use Illuminate\Support\Facades\Log;
 
 class ScanController extends BaseController
 {
@@ -57,6 +58,9 @@ class ScanController extends BaseController
             return $this->success($result["status"]);
 
         } catch (\Throwable $e) {
+            Log::error('Error in validateImageByProfileGender: ' . $e->getMessage(), [
+                'exception' => $e,
+            ]);
             if (isset($tempFileName)) {
                 S3Helper::removeFileTemp($tempFileName);
             }
