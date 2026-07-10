@@ -78,7 +78,7 @@ class ByteplusService
             ->post(
                 'https://ark.ap-southeast.bytepluses.com/api/v3/responses',
                 [
-                    'model' => 'seed-2-0-mini-260215',
+                    'model' => 'seed-2-0-lite-260228',
                     'stream' => false,
                     'input' => [
                         [
