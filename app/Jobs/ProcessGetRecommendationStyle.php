@@ -17,7 +17,8 @@ class ProcessGetRecommendationStyle implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public int $tries = 1;
+    public $timeout = 120;
+    public $tries = 3;
     
     public function __construct(
         public int $scanId,
