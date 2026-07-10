@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Support\Facades\Log;
 
 abstract class BaseRequest extends FormRequest
 {
@@ -22,6 +23,7 @@ abstract class BaseRequest extends FormRequest
      */
     protected function failedValidation(Validator $validator)
     {
+        Log::error('Validation error', $validator->errors()->toArray());
         throw new HttpResponseException(
             response()->json([
                 'success' => false,
