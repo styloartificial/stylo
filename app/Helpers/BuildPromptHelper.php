@@ -73,6 +73,90 @@ class BuildPromptHelper
 
         $outfitDetail = $scan->outfit_detail ?? null;
 
+        $selectedItems = array_filter(array_map('trim', explode(',', strtolower($scanCategoryItems ?? ''))));
+
+        // FIX: cek spesifik "hijab", bukan cuma !empty (karena ada pilihan "Non Hijab" yang juga type=hijab)
+        $isHijabSelected = strtolower(trim($scanCategoryHijab ?? '')) === 'hijab';
+
+        // Bangun ATURAN PER ITEM — HANYA item yang dipilih user yang muncul
+        $itemRulesMap = [
+            'atasan'     => "- Atasan     → hapus & ganti atasan saja",
+            'bawahan'    => "- Bawahan    → hapus & ganti bawahan saja",
+            'outer'      => "- Outer      → tambahkan outer yang sesuai",
+            'dress'      => "- Dress      → hapus & ganti dengan dress lain",
+            'gamis'      => "- Gamis      → hapus & ganti dengan gamis lain",
+            'sepatu'     => "- Sepatu     → hapus & ganti sepatu saja",
+            'aksesories' => "- Aksesories → tambahkan/ganti aksesori yang sesuai",
+        ];
+        $itemRules = [];
+        foreach ($itemRulesMap as $key => $rule) {
+            if (in_array($key, $selectedItems)) $itemRules[] = $rule;
+        }
+        if ($isHijabSelected) $itemRules[] = "- Hijab      → aktifkan MODE HIJAB PENUH (lihat aturan di bawah)";
+
+        $aturanPerItemSection = !empty($itemRules) ? "
+        ==================================================
+        ATURAN PER ITEM
+        ==================================================
+
+        " . implode("\n", $itemRules) . "
+
+        ⚠️ WAJIB: HANYA ubah item yang disebutkan di atas. JANGAN mengubah item lain yang
+        tidak ada dalam daftar ini (contoh: kalau hanya 'Atasan' yang dipilih, bawahan, outer,
+        dan hijab pada foto asli HARUS tetap seperti aslinya).
+        " : "";
+
+        // MODE HIJAB hanya muncul kalau memang dipilih, kalau tidak → MODE NON-HIJAB
+        $modeHijabSection = $isHijabSelected ? "
+        ==================================================
+        ⚠️⚠️⚠️ MODE HIJAB — ATURAN KRITIS — WAJIB DIPATUHI TANPA PENGECUALIAN ⚠️⚠️⚠️
+        ==================================================
+
+        Jika 'Hijab' dipilih:
+
+        PENUTUPAN RAMBUT — PRIORITAS TERTINGGI:
+        ► SELURUH rambut WAJIB tertutup sempurna — tanpa pengecualian apapun
+        ► Jika foto asli BELUM berhijab:
+        - Buat hijab yang realistis dan menutupi 100% rambut
+        - Tidak boleh ada garis rambut, helai rambut, atau tekstur rambut terlihat
+        - Perlakukan rambut yang terlihat seperti aurat yang harus ditutup
+        ► Jika foto asli SUDAH berhijab:
+        - Pertahankan hijab, upgrade style sesuai preferensi user
+        - Pastikan semua rambut tetap tertutup setelah pergantian style
+
+        PENUTUPAN TUBUH (semua wajib tanpa terkecuali):
+        ✓ Rambut  → tertutup penuh oleh hijab
+        ✓ Leher   → tertutup
+        ✓ Dada    → tertutup
+        ✓ Lengan  → hanya lengan panjang
+        ✓ Kaki    → bawahan panjang hingga mata kaki
+        ✓ Siluet  → longgar dan sopan
+
+        SANGAT DILARANG — TIDAK BOLEH ADA DALAM HASIL GAMBAR:
+        ✗ Rambut atau garis rambut terlihat
+        ✗ Pakaian ketat
+        ✗ Crop top / rok pendek / celana pendek
+        ✗ Pakaian tanpa lengan
+        ✗ Kain transparan atau tembus pandang
+        ✗ Kulit terlihat selain wajah dan tangan
+
+        EKSEKUSI HIJAB:
+        - Tampak realistis, natural, dan rapi
+        - Modis dan sesuai dengan keseluruhan outfit
+        - Menyatu dengan warna dan gaya outfit
+        " : "
+        ==================================================
+        ⚠️ MODE NON-HIJAB — WAJIB DIPATUHI
+        ==================================================
+
+        User TIDAK memilih hijab. Maka:
+        ► JANGAN menambahkan hijab dalam bentuk apapun ke hasil gambar
+        ► JANGAN menutupi rambut — rambut asli pada foto WAJIB tetap terlihat apa adanya
+        ► Jika foto asli tidak berhijab, hasil akhir juga TIDAK BOLEH berhijab
+        ► Jika foto asli SUDAH berhijab (bukan dari pilihan kategori ini), PERTAHANKAN hijab
+        aslinya apa adanya — jangan dilepas, jangan diubah gayanya
+        ";
+
         $prompt = "
            Kamu adalah AI fashion stylist dan virtual try-on expert.
 
@@ -89,7 +173,7 @@ class BuildPromptHelper
            - Background & framing foto
            - Pencahayaan
 
-           YANG BOLEH DIUBAH: hanya pakaian dan aksesori.
+           YANG BOLEH DIUBAH: hanya pakaian dan aksesori sesuai kategori yang dipilih user.
 
            ==================================================
            PROFIL USER
@@ -125,53 +209,9 @@ class BuildPromptHelper
            ► Jangan mengabaikan satu pun detail dari instruksi user di atas
 
            ==================================================
-           " : "") . "
-
-           ==================================================
-           ATURAN PER ITEM
-           ==================================================
-
-           - Atasan  → hapus & ganti atasan saja
-           - Bawahan → hapus &ganti bawahan saja
-           - Outer   → tambahkan outer yang sesuai
-           - Hijab   → aktifkan MODE HIJAB PENUH (lihat aturan di bawah)
-
-           ==================================================
-           ⚠️⚠️⚠️ MODE HIJAB — ATURAN KRITIS — WAJIB DIPATUHI TANPA PENGECUALIAN ⚠️⚠️⚠️
-           ==================================================
-
-           Jika 'Hijab' dipilih:
-
-           PENUTUPAN RAMBUT — PRIORITAS TERTINGGI:
-           ► SELURUH rambut WAJIB tertutup sempurna — tanpa pengecualian apapun
-           ► Jika foto asli BELUM berhijab:
-           - Buat hijab yang realistis dan menutupi 100% rambut
-           - Tidak boleh ada garis rambut, helai rambut, atau tekstur rambut terlihat
-           - Perlakukan rambut yang terlihat seperti aurat yang harus ditutup
-           ► Jika foto asli SUDAH berhijab:
-           - Pertahankan hijab, upgrade style sesuai preferensi user
-           - Pastikan semua rambut tetap tertutup setelah pergantian style
-
-           PENUTUPAN TUBUH (semua wajib tanpa terkecuali):
-           ✓ Rambut  → tertutup penuh oleh hijab
-           ✓ Leher   → tertutup
-           ✓ Dada    → tertutup
-           ✓ Lengan  → hanya lengan panjang
-           ✓ Kaki    → bawahan panjang hingga mata kaki
-           ✓ Siluet  → longgar dan sopan
-
-           SANGAT DILARANG — TIDAK BOLEH ADA DALAM HASIL GAMBAR:
-           ✗ Rambut atau garis rambut terlihat
-           ✗ Pakaian ketat
-           ✗ Crop top / rok pendek / celana pendek
-           ✗ Pakaian tanpa lengan
-           ✗ Kain transparan atau tembus pandang
-           ✗ Kulit terlihat selain wajah dan tangan
-
-           EKSEKUSI HIJAB:
-           - Tampak realistis, natural, dan rapi
-           - Modis dan sesuai dengan keseluruhan outfit
-           - Menyatu dengan warna dan gaya outfit
+           " : "")
+            . $aturanPerItemSection
+            . $modeHijabSection . "
 
            ==================================================
            PANDUAN WARNA & FIT
@@ -211,6 +251,8 @@ class BuildPromptHelper
            Field 'visual_prompt' WAJIB:
            - Ditulis dalam bahasa Inggris
            - Berisi deskripsi visual pakaian yang sangat detail dan presisi untuk keperluan image generation
+           - HANYA deskripsikan item yang termasuk kategori terpilih di atas — JANGAN
+           mendeskripsikan item lain yang tidak disebutkan
            - Sebutkan: warna spesifik, bahan, potongan/cut, panjang, dan detail visual lainnya
            - Jika user mengisi outfit_detail → jadikan itu sebagai dasar utama, jangan tambahkan
            elemen yang tidak disebutkan user
@@ -232,7 +274,6 @@ class BuildPromptHelper
            \"visual_prompt\": \"deskripsi visual outfit dalam bahasa Inggris untuk image generation\",
            \"products\": [
                {
-                \"name\": \"[jenis item] [bahan/material] [model/cut] [warna spesifik] — contoh: kemeja linen oversized lengan panjang putih tulang\",
                 \"name\": \"[gender: $userGender] [jenis item] [bahan/material] [model/cut] [warna spesifik] — contoh: " . ($userGender == "MALE" ? "kemeja flannel slim fit lengan panjang navy blue pria" : "blouse linen oversized lengan panjang putih tulang wanita") . "\",
                \"brand\": \"nama brand (isi 'unbranded' jika tidak spesifik)\",
                \"category\": \"kategori produk\"
@@ -248,7 +289,7 @@ class BuildPromptHelper
 
         try {
             FirebaseLogHelper::logPromptSent($db, $ticketId);
-            $isHijab = !empty($scanCategoryHijab);
+            $isHijab = $isHijabSelected;
 
             \Illuminate\Support\Facades\Log::info("[BUILD PROMPT HELPER] Payload to BytePlusService", [
                 // 'prompt' => $prompt,
