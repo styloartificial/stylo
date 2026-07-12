@@ -147,9 +147,7 @@ class SaveItemController extends BaseController
 
             $scans->getCollection()->transform(function ($scan) {
                 // ✅ Convert scan->img_url
-                $scan->scanSaves->each(function ($save) {
-                    $save->img_url = $this->convertToUrl($save->img_url);
-                });
+                 $scan->img_url = $this->convertToUrl($scan->img_url);
                 
 
                 // Convert scanResult->img_urls
@@ -186,9 +184,7 @@ class SaveItemController extends BaseController
             }
 
             // ✅ Convert scan->img_url
-            $scan->scanSaves->each(function ($save) {
-                $save->img_url = $this->convertToUrl($save->img_url);
-            });
+            $scan->img_url = $this->convertToUrl($scan->img_url);         
             
 
             // Convert scanResult->img_urls
