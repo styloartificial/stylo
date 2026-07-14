@@ -35,6 +35,7 @@ class ProcessGetRecommendationStyle implements ShouldQueue
 
         $db = FirebaseService::database();
 
+        Log::info("Prepare scrap");
         FirebaseLogHelper::logScrapPrepared($db, $this->ticketId);
 
         $products = BuildPromptHelper::run($scan);
