@@ -78,209 +78,91 @@ class BuildPromptHelper
         // FIX: cek spesifik "hijab", bukan cuma !empty (karena ada pilihan "Non Hijab" yang juga type=hijab)
         $isHijabSelected = strtolower(trim($scanCategoryHijab ?? '')) === 'hijab';
 
-        // Bangun ATURAN PER ITEM — HANYA item yang dipilih user yang muncul
         $itemRulesMap = [
-            'atasan'     => "- Atasan     → hapus & ganti atasan saja",
-            'bawahan'    => "- Bawahan    → hapus & ganti bawahan saja",
-            'outer'      => "- Outer      → tambahkan outer yang sesuai",
-            'dress'      => "- Dress      → hapus & ganti dengan dress lain",
-            'gamis'      => "- Gamis      → hapus & ganti dengan gamis lain",
-            'sepatu'     => "- Sepatu     → hapus & ganti sepatu saja",
-            'aksesories' => "- Aksesories → tambahkan/ganti aksesori yang sesuai",
+            'atasan'     => "- Atasan: hapus & ganti atasan saja",
+            'bawahan'    => "- Bawahan: hapus & ganti bawahan saja",
+            'outer'      => "- Outer: tambahkan outer yang sesuai",
+            'dress'      => "- Dress: hapus & ganti dengan dress lain",
+            'gamis'      => "- Gamis: hapus & ganti dengan gamis lain",
+            'sepatu'     => "- Sepatu: hapus & ganti sepatu saja",
+            'aksesories' => "- Aksesories: tambahkan/ganti aksesori yang sesuai",
         ];
         $itemRules = [];
         foreach ($itemRulesMap as $key => $rule) {
             if (in_array($key, $selectedItems)) $itemRules[] = $rule;
         }
-        if ($isHijabSelected) $itemRules[] = "- Hijab      → aktifkan MODE HIJAB PENUH (lihat aturan di bawah)";
+        if ($isHijabSelected) $itemRules[] = "- Hijab: aktifkan mode hijab penuh (lihat aturan di bawah)";
 
         $aturanPerItemSection = !empty($itemRules) ? "
-        ==================================================
-        ATURAN PER ITEM
-        ==================================================
 
+        ATURAN PER ITEM — hanya item ini yang boleh diubah, item lain WAJIB tetap seperti foto asli:
         " . implode("\n", $itemRules) . "
-
-        ⚠️ WAJIB: HANYA ubah item yang disebutkan di atas. JANGAN mengubah item lain yang
-        tidak ada dalam daftar ini (contoh: kalau hanya 'Atasan' yang dipilih, bawahan, outer,
-        dan hijab pada foto asli HARUS tetap seperti aslinya).
         " : "";
 
-        // MODE HIJAB hanya muncul kalau memang dipilih, kalau tidak → MODE NON-HIJAB
         $modeHijabSection = $isHijabSelected ? "
-        ==================================================
-        ⚠️⚠️⚠️ MODE HIJAB — ATURAN KRITIS — WAJIB DIPATUHI TANPA PENGECUALIAN ⚠️⚠️⚠️
-        ==================================================
 
-        Jika 'Hijab' dipilih:
-
-        PENUTUPAN RAMBUT — PRIORITAS TERTINGGI:
-        ► SELURUH rambut WAJIB tertutup sempurna — tanpa pengecualian apapun
-        ► Jika foto asli BELUM berhijab:
-        - Buat hijab yang realistis dan menutupi 100% rambut
-        - Tidak boleh ada garis rambut, helai rambut, atau tekstur rambut terlihat
-        - Perlakukan rambut yang terlihat seperti aurat yang harus ditutup
-        ► Jika foto asli SUDAH berhijab:
-        - Pertahankan hijab, upgrade style sesuai preferensi user
-        - Pastikan semua rambut tetap tertutup setelah pergantian style
-
-        PENUTUPAN TUBUH (semua wajib tanpa terkecuali):
-        ✓ Rambut  → tertutup penuh oleh hijab
-        ✓ Leher   → tertutup
-        ✓ Dada    → tertutup
-        ✓ Lengan  → hanya lengan panjang
-        ✓ Kaki    → bawahan panjang hingga mata kaki
-        ✓ Siluet  → longgar dan sopan
-
-        SANGAT DILARANG — TIDAK BOLEH ADA DALAM HASIL GAMBAR:
-        ✗ Rambut atau garis rambut terlihat
-        ✗ Pakaian ketat
-        ✗ Crop top / rok pendek / celana pendek
-        ✗ Pakaian tanpa lengan
-        ✗ Kain transparan atau tembus pandang
-        ✗ Kulit terlihat selain wajah dan tangan
-
-        EKSEKUSI HIJAB:
-        - Tampak realistis, natural, dan rapi
-        - Modis dan sesuai dengan keseluruhan outfit
-        - Menyatu dengan warna dan gaya outfit
+        MODE HIJAB (wajib!):
+        - Tutup SELURUH rambut secara realistis — tidak boleh ada helai atau garis rambut terlihat sama sekali
+        - Foto asli belum berhijab → buat hijab baru yang menutup 100% rambut. Foto asli sudah berhijab → pertahankan, cukup upgrade stylenya
+        - Tutup juga leher & dada, lengan panjang, bawahan panjang sampai mata kaki, siluet longgar dan sopan
+        - Dilarang keras: pakaian ketat/transparan, crop top, rok/celana pendek, tanpa lengan, kulit terlihat selain wajah dan tangan
+        - Hasil akhir harus rapi, natural, dan menyatu dengan warna & gaya outfit
         " : "
-        ==================================================
-        ⚠️ MODE NON-HIJAB — WAJIB DIPATUHI
-        ==================================================
 
-        User TIDAK memilih hijab. Maka:
-        ► JANGAN menambahkan hijab dalam bentuk apapun ke hasil gambar
-        ► JANGAN menutupi rambut — rambut asli pada foto WAJIB tetap terlihat apa adanya
-        ► Jika foto asli tidak berhijab, hasil akhir juga TIDAK BOLEH berhijab
-        ► Jika foto asli SUDAH berhijab (bukan dari pilihan kategori ini), PERTAHANKAN hijab
-        aslinya apa adanya — jangan dilepas, jangan diubah gayanya
+        MODE NON-HIJAB (wajib!):
+        - Jangan tambahkan hijab dalam bentuk apapun, rambut asli WAJIB tetap terlihat apa adanya
+        - Kalau foto asli sudah berhijab (bukan dari pilihan kategori ini), pertahankan apa adanya, jangan dilepas atau diubah gayanya
         ";
 
         $prompt = "
-           Kamu adalah AI fashion stylist dan virtual try-on expert.
+        Kamu adalah AI fashion stylist dan virtual try-on expert.
 
-           ==================================================
-           TUGAS
-           ==================================================
+        TUGAS: Ganti HANYA outfit pada foto sesuai preferensi user. Pertahankan wajah & identitas, bentuk & postur tubuh, pose, background, framing, dan pencahayaan — jangan diubah sama sekali. Yang boleh diubah hanya pakaian dan aksesori sesuai kategori yang dipilih.
 
-           Dari foto yang diberikan, ganti HANYA outfit sesuai preferensi user.
+        PROFIL USER
+        - Gender: $userGender
+        - Tinggi: $userHeight cm, Berat: $userWeight kg
+        - Warna kulit: $userSkinTone
+        - Bentuk tubuh: $userBodyShape
 
-           PERTAHANKAN (JANGAN diubah):
-           - Wajah & identitas
-           - Bentuk & postur tubuh
-           - Pose
-           - Background & framing foto
-           - Pencahayaan
+        PREFERENSI OUTFIT
+        " . (!empty($scanCategoryItems)    ? "- Item: $scanCategoryItems\n"    : "")
+        . (!empty($scanCategoryOccasion)   ? "- Occasion: $scanCategoryOccasion\n" : "")
+        . (!empty($scanCategoryStyle)      ? "- Gaya: $scanCategoryStyle\n"    : "")
+        . (!empty($scanCategoryHijab)      ? "- Hijab: $scanCategoryHijab\n"    : "")
+        . ($outfitDetail ? "
+        DETAIL DARI USER (prioritas tinggi, wajib dipatuhi!): \"$outfitDetail\"
+        - Sesuatu yang disukai user → wajib diterapkan. Yang tidak disukai → wajib dihindari
+        - Warna/bahan/item spesifik yang disebut → gunakan persis, jangan tambahkan elemen lain yang tidak disebut
+        " : "")
+        . $aturanPerItemSection
+        . $modeHijabSection . "
 
-           YANG BOLEH DIUBAH: hanya pakaian dan aksesori sesuai kategori yang dipilih user.
+        WARNA & FIT: pilih warna yang cocok dengan warna kulit ($userSkinTone) dan siluet yang sesuai bentuk tubuh ($userBodyShape), selaraskan dengan occasion dan gaya. Outfit harus tampak realistis di tubuh — tanpa distorsi kain, tangan/wajah tidak cacat, tidak ada anggota tubuh terpotong.
 
-           ==================================================
-           PROFIL USER
-           ==================================================
+        OUTPUT — JSON valid saja, tanpa teks tambahan apapun di luar JSON.
 
-           - Gender      : $userGender
-           - Tinggi      : $userHeight cm
-           - Berat       : $userWeight kg
-           - Warna kulit : $userSkinTone
-           - Bentuk tubuh: $userBodyShape
+        summary: satu paragraf mengalir, sudut pandang kedua (kamu/tubuhmu/kulitmu). Jelaskan KENAPA outfit ini cocok untuk profil user (warna kulit, bentuk tubuh, proporsi tinggi-berat, occasion) — bukan sekadar sebutkan item yang dipakai. Sertakan tips styling singkat. Contoh tone: \"Warna kulitmu yang sangat terang sangat cocok dipadukan dengan warna coklat hangat seperti ini — earth tone terbukti menonjolkan kecerahan kulit tanpa terlihat pucat. Potongan mock neck pada blouse ini mempertegas bentuk tubuh hourglass-mu secara elegan, pas untuk suasana kantor yang profesional. Padukan dengan rok pensil hitam agar lekuk pinggangmu makin terdefinisi.\"
 
-           ==================================================
-           PREFERENSI OUTFIT
-           ==================================================
-           " . (!empty($scanCategoryItems)    ? "- Item     : $scanCategoryItems\n"    : "")
-            . (!empty($scanCategoryOccasion)   ? "- Occasion : $scanCategoryOccasion\n" : "")
-            . (!empty($scanCategoryStyle)      ? "- Gaya     : $scanCategoryStyle\n"    : "")
-            . (!empty($scanCategoryHijab)      ? "- Hijab    : $scanCategoryHijab\n"    : "")
-            . ($outfitDetail ? "
-           ==================================================
-           ⚠️ DETAIL OUTFIT DARI USER — PRIORITAS TINGGI
-           ==================================================
+        visual_prompt: bahasa Inggris, deskripsi visual detail (warna spesifik, bahan, potongan/cut, panjang) HANYA untuk item kategori yang dipilih — jangan deskripsikan item lain. Dasarkan pada outfit_detail user kalau ada; kalau kosong, tentukan sendiri berdasarkan item, style, occasion, dan profil user. Contoh: \"oversized off-white linen shirt with rolled sleeves, wide-leg beige trousers with a relaxed fit, minimal clean look, earth tone palette, casual chic style\"
 
-           User telah memberikan instruksi spesifik berikut. WAJIB dipatuhi sepenuhnya:
+        products: semua produk wajib sesuai gender user ($userGender). " . ($userGender == "MALE"
+            ? "Dilarang merekomendasikan produk perempuan (blouse, rok, dress, gamis, hijab, dll), gunakan terminologi produk pria: kemeja pria, blazer pria, celana chino pria, dst."
+            : "Dilarang merekomendasikan produk laki-laki, gunakan terminologi produk wanita: blouse, rok, dress, celana kulot wanita, dst.") . " Tiap produk isi name (gender + jenis item + bahan/material + model/cut + warna spesifik, contoh: " . ($userGender == "MALE" ? "kemeja flannel slim fit lengan panjang navy blue pria" : "blouse linen oversized lengan panjang putih tulang wanita") . "), brand (isi 'unbranded' kalau tidak spesifik), dan category.
 
-           \"$outfitDetail\"
-
-           Panduan membaca instruksi user:
-           ► Jika user menyebut sesuatu yang DIA SUKA     → wajib diterapkan pada outfit
-           ► Jika user menyebut sesuatu yang TIDAK DIA SUKA → wajib dihindari pada outfit
-           ► Jika user menyebut warna spesifik             → gunakan warna tersebut
-           ► Jika user menyebut item/bahan/model spesifik  → terapkan secara akurat
-           ► Jangan mengabaikan satu pun detail dari instruksi user di atas
-
-           ==================================================
-           " : "")
-            . $aturanPerItemSection
-            . $modeHijabSection . "
-
-           ==================================================
-           PANDUAN WARNA & FIT
-           ==================================================
-
-           - Pilih warna yang cocok dengan warna kulit : $userSkinTone
-           - Pilih siluet yang sesuai bentuk tubuh     : $userBodyShape
-           - Sesuaikan dengan occasion dan gaya yang dipilih
-           - Outfit harus tampak realistis di tubuh — tidak ada distorsi kain,
-           tangan atau wajah tidak cacat, tidak ada anggota tubuh yang terpotong
-
-           ==================================================
-           OUTPUT — JSON VALID SAJA (tanpa teks tambahan)
-           ==================================================
-
-           Untuk setiap produk, berikan data SPESIFIK dan ACTIONABLE untuk keperluan pencarian produk nyata.
-           Bayangkan kamu sedang menulis search query untuk marketplace (Tokopedia, Shopee, Zalora).
-
-           Field 'summary' WAJIB :
-           -  Analisis singkat profil user (warna kulit, bentuk tubuh, proporsi tinggi-berat)
-           -  Alasan kenapa outfit yang dipilih cocok untuk profil tersebut
-           -  Tips styling spesifik (mis. warna yang mempercantik kulit)
-           -  Rekomendasi produk yang sesuai dengan outfit yang dihasilkan
-           - Gunakan sudut pandang orang kedua (kamu, tubuhmu, kulitmu)
-           - Jelaskan KENAPA outfit ini cocok untuk profil user, bukan WHAT yang dipakai
-           - Hubungkan setiap pilihan outfit dengan warna kulit, bentuk tubuh, atau occasion
-           - DILARANG: hanya menyebutkan item pakaian tanpa alasan
-           - DILARANG: format seperti → outfit ini terdiri dari...
-           - Contoh tone yang BENAR:
-               \"Warna kulitmu yang sangat terang sangat cocok dipadukan dengan warna coklat hangat
-               seperti ini — warna earth tone terbukti menonjolkan kecerahan kulit tanpa terlihat
-               pucat. Potongan mock neck pada blouse ini juga mempertegas bentuk tubuh hourglass-mu
-               secara elegan tanpa terlalu mencolok, sangat pas untuk suasana kantor yang profesional.
-               Untuk memaksimalkan tampilanmu, coba padukan dengan rok pensil hitam agar lekukan
-               pinggangmu makin terdefinisi dengan rapi.\"
-
-           Field 'visual_prompt' WAJIB:
-           - Ditulis dalam bahasa Inggris
-           - Berisi deskripsi visual pakaian yang sangat detail dan presisi untuk keperluan image generation
-           - HANYA deskripsikan item yang termasuk kategori terpilih di atas — JANGAN
-           mendeskripsikan item lain yang tidak disebutkan
-           - Sebutkan: warna spesifik, bahan, potongan/cut, panjang, dan detail visual lainnya
-           - Jika user mengisi outfit_detail → jadikan itu sebagai dasar utama, jangan tambahkan
-           elemen yang tidak disebutkan user
-           - Jika outfit_detail kosong → tentukan sendiri berdasarkan item, style, occasion,
-           dan profil user
-           - Contoh: \"oversized off-white linen shirt with rolled sleeves, wide-leg beige trousers
-           with a relaxed fit, minimal clean look, earth tone palette, casual chic style\"
-
-            Field 'products' WAJIB:
-            - Semua produk WAJIB sesuai gender user: $userGender
-            " . ($userGender == "MALE"
-                ? "- DILARANG merekomendasikan produk perempuan (blouse, rok, dress, gamis, hijab, dll)\n            - Gunakan terminologi produk pria: kemeja pria, blazer pria, celana chino pria, dst"
-                : "- DILARANG merekomendasikan produk laki-laki\n            - Gunakan terminologi produk wanita: blouse, rok, dress, celana kulot wanita, dst") . "
-
-
-           {
-           \"title\": \"judul outfit\",
-           \"summary\": \"satu paragraf rekomendasi mengalir berbasis profil user seperti contoh di atas\",
-           \"visual_prompt\": \"deskripsi visual outfit dalam bahasa Inggris untuk image generation\",
-           \"products\": [
-               {
-                \"name\": \"[gender: $userGender] [jenis item] [bahan/material] [model/cut] [warna spesifik] — contoh: " . ($userGender == "MALE" ? "kemeja flannel slim fit lengan panjang navy blue pria" : "blouse linen oversized lengan panjang putih tulang wanita") . "\",
-               \"brand\": \"nama brand (isi 'unbranded' jika tidak spesifik)\",
-               \"category\": \"kategori produk\"
-               }
-           ]
-           }
-           ";
+        {
+        \"title\": \"judul outfit\",
+        \"summary\": \"...\",
+        \"visual_prompt\": \"...\",
+        \"products\": [
+            {
+            \"name\": \"...\",
+            \"brand\": \"...\",
+            \"category\": \"...\"
+            }
+        ]
+        }
+        ";
 
         $imagesUrl = [
             $scan->img_url,
