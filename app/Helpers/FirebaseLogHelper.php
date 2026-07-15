@@ -18,6 +18,15 @@ class FirebaseLogHelper {
         
         $logs = $logsRef->getValue() ?? [];
 
+        foreach ($logs as $log) {
+            if (
+                ($log['title'] ?? '') === $title &&
+                ($log['description'] ?? '') === $description
+            ) {
+                return; 
+            }
+        }
+
         $lastId = 0;
         if (!empty($logs)) {
             $lastLog = end($logs);
