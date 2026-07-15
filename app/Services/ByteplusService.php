@@ -30,6 +30,10 @@ class ByteplusService
 
 
         $promptForImageGen = "Edit foto orang ini sesuai deskripsi outfit berikut dan hasilkan 3 foto.
+            WAJIB PALING UTAMA — HANYA ubah item pakaian yang termasuk dalam kategori yang dipilih user ATAU disebutkan secara eksplisit di detail outfit user.
+            Item apapun yang TIDAK dipilih di kategori dan TIDAK disebutkan di detail outfit WAJIB dipertahankan 100% identik dengan foto asli — termasuk warna, model, potongan, tekstur, dan seluruh detail visual dari item tersebut, tanpa terkecuali.
+            DILARANG KERAS mengganti, mendesain ulang, atau 'menyempurnakan' item yang tidak dipilih/tidak disebutkan tersebut — meskipun menurutmu item itu kurang serasi dengan outfit baru.
+
             WAJIB: pose berdiri tegak natural seperti foto katalog fashion (Uniqlo/Zara/H&M).
             DILARANG: pose duduk, berbaring, atau menonjolkan lekukan tubuh.
             DILARANG: paha, perut, atau punggung terlihat.
