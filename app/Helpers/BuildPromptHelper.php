@@ -95,8 +95,10 @@ class BuildPromptHelper
 
         $aturanPerItemSection = !empty($itemRules) ? "
 
-        ATURAN PER ITEM — hanya item ini yang boleh diubah, item lain WAJIB tetap seperti foto asli:
+        ATURAN PER ITEM — HANYA item di bawah ini yang boleh diubah:
         " . implode("\n", $itemRules) . "
+
+        Item apapun yang TIDAK ada di daftar di atas dan TIDAK disebutkan secara eksplisit di outfit_detail user WAJIB tetap 100% seperti foto asli — jangan ganti warna, model, potongan, atau tambahkan detail baru pada item tersebut. Jangan deskripsikan item tersebut di visual_prompt sama sekali.
         " : "";
 
         $modeHijabSection = $isHijabSelected ? "
@@ -144,8 +146,8 @@ class BuildPromptHelper
 
         summary: satu paragraf mengalir, sudut pandang kedua (kamu/tubuhmu/kulitmu). Jelaskan KENAPA outfit ini cocok untuk profil user (warna kulit, bentuk tubuh, proporsi tinggi-berat, occasion) — bukan sekadar sebutkan item yang dipakai. Sertakan tips styling singkat. Contoh tone: \"Warna kulitmu yang sangat terang sangat cocok dipadukan dengan warna coklat hangat seperti ini — earth tone terbukti menonjolkan kecerahan kulit tanpa terlihat pucat. Potongan mock neck pada blouse ini mempertegas bentuk tubuh hourglass-mu secara elegan, pas untuk suasana kantor yang profesional. Padukan dengan rok pensil hitam agar lekuk pinggangmu makin terdefinisi.\"
 
-        visual_prompt: bahasa Inggris, deskripsi visual detail (warna spesifik, bahan, potongan/cut, panjang) HANYA untuk item kategori yang dipilih — jangan deskripsikan item lain. Dasarkan pada outfit_detail user kalau ada; kalau kosong, tentukan sendiri berdasarkan item, style, occasion, dan profil user. Contoh: \"oversized off-white linen shirt with rolled sleeves, wide-leg beige trousers with a relaxed fit, minimal clean look, earth tone palette, casual chic style\"
-
+        visual_prompt: bahasa Inggris, deskripsi visual detail (warna spesifik, bahan, potongan/cut, panjang) HANYA untuk item yang ada di kategori terpilih ATAU disebutkan eksplisit di outfit_detail user. Item yang TIDAK dipilih di kategori dan TIDAK disebutkan di outfit_detail WAJIB tidak dideskripsikan sama sekali di visual_prompt — jangan buat, ganti, atau sebutkan detail baru untuk item tersebut, karena item itu harus tetap persis seperti foto asli. Dasarkan pada outfit_detail user kalau ada; kalau kosong, tentukan sendiri berdasarkan item, style, occasion, dan profil user. Contoh: \"oversized off-white linen shirt with rolled sleeves, wide-leg beige trousers with a relaxed fit, minimal clean look, earth tone palette, casual chic style\"
+       
         products: semua produk wajib sesuai gender user ($userGender). " . ($userGender == "MALE"
             ? "Dilarang merekomendasikan produk perempuan (blouse, rok, dress, gamis, hijab, dll), gunakan terminologi produk pria: kemeja pria, blazer pria, celana chino pria, dst."
             : "Dilarang merekomendasikan produk laki-laki, gunakan terminologi produk wanita: blouse, rok, dress, celana kulot wanita, dst.") . " Tiap produk isi name (gender + jenis item + bahan/material + model/cut + warna spesifik, contoh: " . ($userGender == "MALE" ? "kemeja flannel slim fit lengan panjang navy blue pria" : "blouse linen oversized lengan panjang putih tulang wanita") . "), brand (isi 'unbranded' kalau tidak spesifik), dan category.
