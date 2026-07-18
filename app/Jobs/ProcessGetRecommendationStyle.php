@@ -67,7 +67,7 @@ class ProcessGetRecommendationStyle implements ShouldQueue
                 ->withHeaders([
                     'x-secret-key' => config('services.scraper.secret_key'),
                 ])
-                ->post('https://scraper.styloartificial.my.id/add-to-queue-scraper', [
+                ->post('https://scraper.styloartificial.my.id/api/add-to-queue-scraper', [
                     'ticket_id' => $this->ticketId,
                     'products'  => $productsFormatted,
                 ]);
