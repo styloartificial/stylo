@@ -65,7 +65,7 @@ class ProcessGetRecommendationStyle implements ShouldQueue
         try {
             $response = Http::timeout(10)
                 ->withHeaders([
-                    'secret_key' => config('services.scraper.secret_key'),
+                    'x-secret-key' => config('services.scraper.secret_key'),
                 ])
                 ->post('https://scraper.styloartificial.my.id/add-to-queue-scraper', [
                     'ticket_id' => $this->ticketId,

@@ -123,7 +123,7 @@ class ScraperController extends BaseController
 
             Http::timeout(10)
                 ->withHeaders([
-                    'secret_key' => config('services.scraper.secret_key'),
+                    'x-secret-key' => config('services.scraper.secret_key'),
                 ])
                 ->post('https://scraper.styloartificial.my.id/api/remove-to-queue', [
                     'ticket_id' => $ticketId,
