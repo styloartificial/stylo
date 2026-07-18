@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use App\Helpers\FirebaseLogHelper;
 use App\Models\Scan;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class ScraperController extends BaseController
 {
