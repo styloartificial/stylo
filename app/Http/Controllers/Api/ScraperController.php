@@ -126,7 +126,7 @@ class ScraperController extends BaseController
                 ->withHeaders([
                     'x-secret-key' => config('services.scraper.secret_key'),
                 ])
-                ->post('https://scraper.styloartificial.my.id/api/remove-to-queue', [
+                ->post('https://scraper.styloartificial.my.id/api/remove-to-queue-scraper', [
                     'ticket_id' => $ticketId,
                 ]);
 
