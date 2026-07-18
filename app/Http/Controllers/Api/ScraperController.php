@@ -121,6 +121,7 @@ class ScraperController extends BaseController
                 FirebaseLogHelper::logGenerationCompleted($db, $ticketIdFromDb);
             }
 
+            Log::info("Ticket request with ID {$ticketId} has been marked as done and logged.");
             Http::timeout(10)
                 ->withHeaders([
                     'x-secret-key' => config('services.scraper.secret_key'),
