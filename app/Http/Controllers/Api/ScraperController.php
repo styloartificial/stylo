@@ -122,13 +122,21 @@ class ScraperController extends BaseController
             }
 
             Log::info("Ticket request with ID {$ticketId} has been marked as done and logged.");
-            Http::timeout(10)
+            $response = Http::timeout(10)
                 ->withHeaders([
                     'x-secret-key' => config('services.scraper.secret_key'),
                 ])
-                ->post('https://scraper.styloartificial.my.id/api/remove-to-queue-scraper', [
-                    'ticket_id' => $ticketId,
-                ]);
+                ->post(
+                    'https://scraper.styloartificial.my.id/api/remove-to-queue-scraper',
+                    [
+                        'ticket_id' => $ticketId,
+                    ]
+                );
+
+            Log::info([
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
 
             return response()->json([
                 'code'    => 200,
