@@ -45,7 +45,6 @@ class ScraperController extends BaseController
             }
 
             return $this->success($oldest);
-
         } catch (\Throwable $th) {
             return $this->serverError($th);
         }
@@ -122,34 +121,7 @@ class ScraperController extends BaseController
                 FirebaseLogHelper::logGenerationCompleted($db, $ticketIdFromDb);
             }
 
-            return response()->json([
-                'code'    => 200,
-                'message' => 'Success',
-                'data'    => null,
-            ], 200);
-
-        } catch (\Throwable $th) {
-            \Illuminate\Support\Facades\Log::error("Ada error!");
-            \Illuminate\Support\Facades\Log::error($th);
-                       return response()->json([
-                'code'    => 500,
-                'message' => $th->getMessage(),
-                'data'    => null,
-            ], 500);
-        }
-    }
-
-    public function removeToQueue(Request $request): JsonResponse
-    {
-        try {
-            
-            $request->validate([
-                'ticket_id' => 'required|string',
-            ]);
-
-            $ticketId = $request->input('ticket_id');
-
-            $response = Http::timeout(10)
+            Http::timeout(10)
                 ->withHeaders([
                     'secret_key' => config('services.scraper.secret_key'),
                 ])
@@ -157,18 +129,19 @@ class ScraperController extends BaseController
                     'ticket_id' => $ticketId,
                 ]);
 
-            if (!$response->successful()) {
-                return response()->json([
-                    'code'    => $response->status(),
-                    'message' => 'Failed to remove ticket from queue.',
-                    'data'    => $response->json(),
-                ], $response->status());
-            }
-
-            return $this->success($response->json());
-
+            return response()->json([
+                'code'    => 200,
+                'message' => 'Success',
+                'data'    => null,
+            ], 200);
         } catch (\Throwable $th) {
-            return $this->serverError($th);
+            \Illuminate\Support\Facades\Log::error("Ada error!");
+            \Illuminate\Support\Facades\Log::error($th);
+            return response()->json([
+                'code'    => 500,
+                'message' => $th->getMessage(),
+                'data'    => null,
+            ], 500);
         }
     }
 }
