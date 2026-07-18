@@ -156,7 +156,7 @@ class ScraperController extends BaseController
                 ->withHeaders([
                     'x-secret-key' => config('services.scraper.secret_key'),
                 ])
-                ->post('https://scraper.styloartificial.my.id/api/search-products', [
+                ->get('https://scraper.styloartificial.my.id/api/search-products', [
                     'search_query' => $request->input('product_name')
                 ]);
 
