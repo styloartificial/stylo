@@ -144,4 +144,30 @@ class ScraperController extends BaseController
             ], 500);
         }
     }
+
+    public function searchProducts(Request $request) {
+        try {
+            $request->validate([
+                'product_name' => 'required|string',
+            ]);
+
+            $response = Http::timeout(10)
+                ->withHeaders([
+                    'x-secret-key' => config('services.scraper.secret_key'),
+                ])
+                ->post('https://scraper.styloartificial.my.id/api/search-products', [
+                    'search_query' => $request->input('product_name')
+                ]);
+            
+            if ($response->failed()) {
+                return $this->clientError("Failed to search products. Status: {$response->status()}, Body: {$response->body()}");
+            }
+
+            return $this->success($response->json());
+        } catch (\Throwable $th) {
+            \Illuminate\Support\Facades\Log::error("Ada error!");
+            \Illuminate\Support\Facades\Log::error($th);
+            
+            return $this->serverError($th);
+    }
 }

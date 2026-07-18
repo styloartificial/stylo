@@ -75,4 +75,5 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::prefix('scraper')->middleware(['auth:sanctum', 'role:Scraper'])->group(function () {
     Route::get('get-oldest-ticket-request', [ScraperController::class, 'getOldestTicketRequest']);
     Route::post('set-done-ticket-request', [ScraperController::class, 'setDoneTicketRequest']);
+    Route::post('search-products', [ScraperController::class, 'searchProducts']);
 });
