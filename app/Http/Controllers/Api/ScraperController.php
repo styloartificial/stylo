@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Helpers\FirebaseLogHelper;
 use App\Models\Scan;
+use Illuminate\Support\Facades\Http;
 
 class ScraperController extends BaseController
 {
@@ -135,6 +136,39 @@ class ScraperController extends BaseController
                 'message' => $th->getMessage(),
                 'data'    => null,
             ], 500);
+        }
+    }
+
+    public function removeToQueue(Request $request): JsonResponse
+    {
+        try {
+            
+            $request->validate([
+                'ticket_id' => 'required|string',
+            ]);
+
+            $ticketId = $request->input('ticket_id');
+
+            $response = Http::timeout(10)
+                ->withHeaders([
+                    'secret_key' => config('services.scraper.secret_key'),
+                ])
+                ->post('https://scraper.styloartificial.my.id/api/remove-to-queue', [
+                    'ticket_id' => $ticketId,
+                ]);
+
+            if (!$response->successful()) {
+                return response()->json([
+                    'code'    => $response->status(),
+                    'message' => 'Failed to remove ticket from queue.',
+                    'data'    => $response->json(),
+                ], $response->status());
+            }
+
+            return $this->success($response->json());
+
+        } catch (\Throwable $th) {
+            return $this->serverError($th);
         }
     }
 }

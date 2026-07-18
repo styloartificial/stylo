@@ -45,4 +45,8 @@ return [
         'key' => env('OPENAI_API_KEY'),
     ],
 
+    'scraper' => [
+        'secret_key' => env('SCRAPER_SECRET_KEY'),
+    ],
+
 ];

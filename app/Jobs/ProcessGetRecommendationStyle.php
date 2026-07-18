@@ -12,6 +12,7 @@ use App\Services\FirebaseService;
 use App\Helpers\FirebaseLogHelper;
 use App\Helpers\BuildPromptHelper;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 
 class ProcessGetRecommendationStyle implements ShouldQueue
 {
@@ -60,6 +61,26 @@ class ProcessGetRecommendationStyle implements ShouldQueue
             'status'     => 'pending',
             'created_at' => now()->toDateTimeString(),
         ]);
+
+        try {
+            $response = Http::timeout(10)
+                ->withHeaders([
+                    'secret_key' => config('services.scraper.secret_key'),
+                ])
+                ->post('https://scraper.styloartificial.my.id/add-to-queue-scraper', [
+                    'ticket_id' => $this->ticketId,
+                    'products'  => $productsFormatted,
+                ]);
+
+            if ($response->failed()) {
+                Log::error("Failed to add ticket {$this->ticketId} to scraper queue. Status: {$response->status()}, Body: {$response->body()}");
+            } else {
+                Log::info("Successfully added ticket {$this->ticketId} to scraper queue.");
+            }
+        } catch (\Throwable $th) {
+            Log::error("Error calling scraper-gateway for ticket {$this->ticketId}: {$th->getMessage()}");
+        }
+
         Log::info("Get recommendation style done.");
         } catch (\Throwable $th) {
             Log::error("Error get recommendation style: {$th->getMessage()}");
