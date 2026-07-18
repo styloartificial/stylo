@@ -145,7 +145,8 @@ class ScraperController extends BaseController
         }
     }
 
-    public function searchProducts(Request $request) {
+    public function searchProducts(Request $request)
+    {
         try {
             $request->validate([
                 'product_name' => 'required|string',
@@ -158,16 +159,19 @@ class ScraperController extends BaseController
                 ->post('https://scraper.styloartificial.my.id/api/search-products', [
                     'search_query' => $request->input('product_name')
                 ]);
-            
+
             if ($response->failed()) {
-                return $this->clientError("Failed to search products. Status: {$response->status()}, Body: {$response->body()}");
+                return $this->clientError(
+                    "Failed to search products. Status: {$response->status()}, Body: {$response->body()}"
+                );
             }
 
             return $this->success($response->json());
         } catch (\Throwable $th) {
-            \Illuminate\Support\Facades\Log::error("Ada error!");
-            \Illuminate\Support\Facades\Log::error($th);
-            
+            \Log::error("Ada error!");
+            \Log::error($th);
+
             return $this->serverError($th);
+        }
     }
 }
