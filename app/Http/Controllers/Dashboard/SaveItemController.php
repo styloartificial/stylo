@@ -73,6 +73,8 @@ class SaveItemController extends BaseController
                     'rating'         => $item['rating'] ?? null,
                     'count_purchase' => $item['count_purchase'] ?? null,
                     'product_url'    => $item['product_url'],
+                    'source'         => $item['source'] ?? null,
+                    'group_label'    => $item['group_label'] ?? null,
                 ]);
             }
 

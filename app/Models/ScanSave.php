@@ -15,6 +15,8 @@ class ScanSave extends Model
         'rating',
         'count_purchase',
         'product_url',
+        'source',
+        'group_label',
     ];
 
     protected $casts = [

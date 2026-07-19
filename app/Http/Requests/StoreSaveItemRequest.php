@@ -21,6 +21,8 @@ class StoreSaveItemRequest extends BaseRequest
             'items.*.count_purchase' => ['nullable', 'numeric'],
             'items.*.price'          => ['nullable', 'numeric'],
             'items.*.product_url'    => ['required', 'url'],
+            'items.*.source'         => ['nullable', 'string', 'in:tokopedia,lazada'],
+            'items.*.group_label'    => ['nullable', 'string'],
         ];
     }
 }
