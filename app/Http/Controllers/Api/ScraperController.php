@@ -96,15 +96,38 @@ class ScraperController extends BaseController
             // 🔗 Reference ke node spesifik
             $ref = $db->getReference("ticket-request/{$key}");
 
-            // 📝 Update data
+            // 🔄 Ambil Scan dari database lokal — dipindah ke atas (sebelum $ref->update)
+            // karena sekarang dibutuhin buat cocokin category sebelum ditulis ke Firebase.
+            $scan = Scan::where('ticket_id', $ticketId)->first();
+
+            // ← BARU: sisipin `category` ke tiap grup di $storedData, berdasarkan
+            // mapping "query → category" yang udah disimpen di $scan->product_categories
+            // (diisi di ProcessGetRecommendationStyle.php). Query yang dicocokin adalah
+            // field `product` di tiap grup, karena itu teks query yang persis sama
+            // yang dikirim ke scraper sebelumnya.
+            $categoryMap = $scan->product_categories ?? [];
+
+            $storedDataWithCategory = collect($storedData)
+                ->map(function ($group) use ($categoryMap) {
+                    $query = $group['product'] ?? null;
+                    $group['category'] = $query ? ($categoryMap[$query] ?? null) : null;
+                    return $group;
+                })
+                ->toArray();
+
+            Log::info("=== CATEGORY MATCHING ===", [
+                'ticket_id'    => $ticketId,
+                'category_map' => $categoryMap,
+                'result'       => $storedDataWithCategory,
+            ]);
+
+            // 📝 Update data (pakai $storedDataWithCategory, bukan $storedData mentah lagi)
             $ref->update([
-                'data'   => $storedData,
+                'data'   => $storedDataWithCategory,
                 'status' => 'success',
             ]);
 
-            // 🔄 Update ke database lokal (Scan)
-            $scan = Scan::where('ticket_id', $ticketId)->first();
-
+            // 🔄 Update status Scan di database lokal
             if ($scan) {
                 $scan->status = "COMPLETED";
                 $scan->save();
@@ -178,8 +201,8 @@ class ScraperController extends BaseController
 
             return $this->success($response->json());
         } catch (\Throwable $th) {
-            \Log::error("Ada error!");
-            \Log::error($th);
+            Log::error("Ada error!");
+            Log::error($th);
 
             return $this->serverError($th);
         }

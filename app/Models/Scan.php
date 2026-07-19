@@ -13,6 +13,11 @@ class Scan extends Model
         'outfit_detail',
         'img_url',
         'status',
+        'product_categories', 
+    ];
+
+    protected $casts = [
+        'product_categories' => 'array', 
     ];
 
     public function user()

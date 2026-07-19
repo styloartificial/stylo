@@ -41,6 +41,25 @@ class ProcessGetRecommendationStyle implements ShouldQueue
 
         $products = BuildPromptHelper::run($scan);
 
+        // ← BARU: simpen mapping "query → category" sebelum $products diratain jadi string doang.
+        // Query di sini harus PERSIS sama formatnya kayak yang dipakai di $productsFormatted,
+        // karena nanti dicocokin balik pakai key ini pas hasil scraper udah balik ke ScraperController.
+        $categoryMap = collect($products)
+            ->mapWithKeys(function ($item) {
+                $query = trim(
+                    ($item['brand'] ?? '') . ' ' .
+                    ($item['name'] ?? '') . ' ' .
+                    ($item['color'] ?? '')
+                );
+                return [$query => $item['category'] ?? null];
+            })
+            ->filter(fn($category, $query) => !empty($query))
+            ->toArray();
+
+        $scan->update(['product_categories' => $categoryMap]);
+
+        Log::info("=== CATEGORY MAP SAVED ===", ['product_categories' => $categoryMap]);
+
         $productsFormatted = collect($products)
             ->map(function ($item) {
                 return trim(
