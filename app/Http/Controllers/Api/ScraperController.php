@@ -185,7 +185,7 @@ class ScraperController extends BaseController
                 'product_name' => 'required|string',
             ]);
 
-            $response = Http::timeout(10)
+            $response = Http::timeout(30)
                 ->withHeaders([
                     'x-secret-key' => config('services.scraper.secret_key'),
                 ])
