@@ -160,7 +160,7 @@ class ByteplusService
             'Authorization' => "Bearer $apiKey",
         ])->timeout(180)->connectTimeout(30)->retry(3, 3000, throw: false)
             ->post('https://ark.ap-southeast.bytepluses.com/api/v3/images/generations', [
-                'model' => 'seedream-5-0-260128',
+                'model' => 'seedream-4-5-251128',
                 'prompt' => $prompt,
                 // 'negative_prompt' => 'sitting, lying down, bending over, tight clothes, form-fitting outfit, body-hugging, revealing clothes, exposed skin, bare legs, bare arms, bare stomach, bare chest, bare back, visible thighs, cleavage, short skirt, short dress, crop top, transparent fabric, sexy pose, provocative pose, nsfw',
                 'image' => $imageUrl,

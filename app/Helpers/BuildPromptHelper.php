@@ -144,7 +144,23 @@ class BuildPromptHelper
 
         OUTPUT — JSON valid saja, tanpa teks tambahan apapun di luar JSON.
 
-        summary: satu paragraf mengalir, sudut pandang kedua (kamu/tubuhmu/kulitmu). Jelaskan KENAPA outfit ini cocok untuk profil user (warna kulit, bentuk tubuh, proporsi tinggi-berat, occasion) — bukan sekadar sebutkan item yang dipakai. Sertakan tips styling singkat. Contoh tone: \"Warna kulitmu yang sangat terang sangat cocok dipadukan dengan warna coklat hangat seperti ini — earth tone terbukti menonjolkan kecerahan kulit tanpa terlihat pucat. Potongan mock neck pada blouse ini mempertegas bentuk tubuh hourglass-mu secara elegan, pas untuk suasana kantor yang profesional. Padukan dengan rok pensil hitam agar lekuk pinggangmu makin terdefinisi.\"
+        summary:
+
+        Berikan rekomendasi fashion personal dalam 2 sampai 3 paragraf menggunakan sudut pandang kedua (kamu, tubuhmu, kulitmu).
+
+        Jangan hanya mendeskripsikan outfit. Jelaskan mengapa outfit ini merupakan pilihan terbaik berdasarkan:
+        - body shape
+        - skin tone
+        - tinggi dan berat badan
+        - gender
+        - occasion
+        - style
+        - preferensi pengguna
+
+        Hubungkan alasan tersebut dengan pemilihan warna, siluet, bahan, potongan pakaian, layering, sepatu, dan aksesori apabila relevan.
+        Akhiri dengan 2 atau 3 tips styling tambahan yang masih sesuai dengan karakteristik pengguna, seperti alternatif warna, aksesori, sepatu, outer, atau cara membuat proporsi tubuh terlihat lebih seimbang.
+        Tulis seperti seorang personal fashion stylist yang sedang memberikan konsultasi, bukan sekadar menjelaskan isi gambar.
+
 
         visual_prompt: bahasa Inggris, deskripsi visual detail (warna spesifik, bahan, potongan/cut, panjang) HANYA untuk item yang ada di kategori terpilih ATAU disebutkan eksplisit di outfit_detail user. Item yang TIDAK dipilih di kategori dan TIDAK disebutkan di outfit_detail WAJIB tidak dideskripsikan sama sekali di visual_prompt — jangan buat, ganti, atau sebutkan detail baru untuk item tersebut, karena item itu harus tetap persis seperti foto asli. Dasarkan pada outfit_detail user kalau ada; kalau kosong, tentukan sendiri berdasarkan item, style, occasion, dan profil user. Contoh: \"oversized off-white linen shirt with rolled sleeves, wide-leg beige trousers with a relaxed fit, minimal clean look, earth tone palette, casual chic style\"
        
