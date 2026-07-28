@@ -64,9 +64,35 @@ class SaveItemController extends BaseController
             $isPartial = filter_var($request->input('is_partial'), FILTER_VALIDATE_BOOLEAN);
 
             foreach ($validated['items'] as $item) {
+                $permanentImgUrl = $item['img_url'];
+                $source = strtolower($item['source'] ?? '');
+
+                // 🔽 BARU: khusus Tokopedia — signed URL-nya expired dalam
+                // hitungan jam (x-expires param), jadi harus di-download,
+                // convert ke webp, lalu di-upload permanen ke Supabase.
+                // Lazada tidak diproses karena URL-nya sudah stabil.
+                if ($source === 'tokopedia') {
+                    try {
+                        $tempFileName = S3Helper::downloadAndConvertToWebp($item['img_url']);
+                        $s3Path       = S3Helper::storeFileToS3('saved-items', $tempFileName);
+                        S3Helper::removeFileTemp($tempFileName);
+
+                        $permanentImgUrl = S3Helper::getUrlFileS3('saved-items', basename($s3Path));
+                    } catch (\Throwable $th) {
+                        // Kalau gagal (misal URL keburu expired duluan sebelum
+                        // sempat di-download), fallback ke URL asli daripada
+                        // gagalin seluruh proses save.
+                        \Illuminate\Support\Facades\Log::warning("Gagal re-upload img_url Tokopedia ke S3", [
+                            'ticket_id' => $ticketId,
+                            'img_url'   => $item['img_url'],
+                            'error'     => $th->getMessage(),
+                        ]);
+                    }
+                }
+
                 ScanSave::create([
                     'scan_id'        => $scan->id,
-                    'img_url'        => $item['img_url'],
+                    'img_url'        => $permanentImgUrl,
                     'is_partial'     => DB::raw($isPartial ? 'TRUE' : 'FALSE'),
                     'product_name'   => $item['product_name'],
                     'price'          => $item['price'] ?? null,

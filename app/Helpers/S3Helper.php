@@ -208,4 +208,83 @@ class S3Helper
 
         return $tempFileName;
     }
+
+    /**
+ * Download gambar dari URL eksternal (misal signed URL Tokopedia),
+ * lalu convert ke .webp, simpan di temp storage.
+ * Return: nama file webp di temp (buat dipakai storeFileToS3).
+ */
+    public static function downloadAndConvertToWebp(string $url): string
+    {
+        $tempDir = storage_path('app/temp');
+
+        if (!is_dir($tempDir)) {
+            mkdir($tempDir, 0755, true);
+        }
+
+        $response = Http::timeout(15)->get($url);
+
+        if (!$response->successful()) {
+            throw new \Exception("Failed to download image from URL: {$url}");
+        }
+
+        $rawContent = $response->body();
+
+        // Deteksi mime dari konten yang didownload (bukan dari URL, karena
+        // signed URL Tokopedia gak selalu punya extension yang jelas di path-nya)
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $mime  = $finfo->buffer($rawContent);
+
+        $uuid         = (string) Str::uuid();
+        $rawTempPath  = "{$tempDir}/{$uuid}_raw";
+        $webpFileName = "{$uuid}.webp";
+        $webpTempPath = "{$tempDir}/{$webpFileName}";
+
+        file_put_contents($rawTempPath, $rawContent);
+
+        switch ($mime) {
+            case 'image/jpeg':
+            case 'image/jpg':
+                $image = imagecreatefromjpeg($rawTempPath);
+                break;
+
+            case 'image/png':
+                $image = imagecreatefrompng($rawTempPath);
+                imagepalettetotruecolor($image);
+                imagealphablending($image, true);
+                imagesavealpha($image, true);
+                break;
+
+            case 'image/gif':
+                $image = imagecreatefromgif($rawTempPath);
+                break;
+
+            case 'image/webp':
+                // udah webp, langsung pakai tanpa convert ulang
+                rename($rawTempPath, $webpTempPath);
+                Storage::disk('local')->put(
+                    "temp/{$webpFileName}",
+                    file_get_contents($webpTempPath)
+                );
+                unlink($webpTempPath);
+                return $webpFileName;
+
+            default:
+                unlink($rawTempPath);
+                throw new \Exception("Unsupported image mime type: {$mime}");
+        }
+
+        imagewebp($image, $webpTempPath, 80);
+        imagedestroy($image);
+        unlink($rawTempPath);
+
+        Storage::disk('local')->put(
+            "temp/{$webpFileName}",
+            file_get_contents($webpTempPath)
+        );
+
+        unlink($webpTempPath);
+
+        return $webpFileName;
+    }
 }
