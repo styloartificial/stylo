@@ -101,6 +101,12 @@ class ScanController extends BaseController
                 ->latest()
                 ->first();
 
+            Log::info("DEBUG openTicket — cek latest scan", [
+                'user_id'        => $request->user()->id,
+                'latest_scan_id' => $latestScan?->id,
+                'save_count'     => $latestScan ? $latestScan->scanSaves()->count() : 'N/A (no latest scan)',
+            ]);
+
             if ($latestScan && $latestScan->scanSaves()->count() === 0) {
                 AutoDeleteSavedItem::dispatchSync($latestScan->id);
             }
