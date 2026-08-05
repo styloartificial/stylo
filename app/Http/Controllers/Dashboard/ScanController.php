@@ -18,6 +18,7 @@ use App\Http\Requests\ValidateImageByProfileGenderRequest;
 use App\Models\ScanItemCategory;
 use App\Services\ByteplusService;
 use App\Jobs\ProcessGetRecommendationStyle;
+use App\Jobs\AutoDeleteSavedItem;
 use Illuminate\Support\Facades\Log;
 
 class ScanController extends BaseController
@@ -94,6 +95,15 @@ class ScanController extends BaseController
             $scan_occassions = $validated['scan_category_id']['occasion'] ?? [];
             $scan_styles    = $validated['scan_category_id']['style']    ?? [];
             $scan_hijab     = $validated['scan_category_id']['hijab']    ?? [];
+
+            // ─── Cek scan terakhir user: kalau ada & belum disimpan → hapus permanen ───
+            $latestScan = Scan::where('user_id', $request->user()->id)
+                ->latest()
+                ->first();
+
+            if ($latestScan && $latestScan->scanSaves()->count() === 0) {
+                AutoDeleteSavedItem::dispatchSync($latestScan->id);
+            }
 
             $scan = Scan::create($dataScan);
 

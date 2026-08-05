@@ -155,6 +155,46 @@ class S3Helper
             self::bucket() . "/" . $supabasePath;
     }
 
+    /**
+     * Hapus file dari Supabase Storage.
+     * $relativePath adalah path relatif setelah bucket, misal: "scans/{ticketId}/file.webp"
+     */
+    public static function deleteFile(string $relativePath): bool
+    {
+        $relativePath = trim($relativePath, '/');
+
+        $response = Http::withHeaders([
+            'apikey'        => self::apiKey(),
+            'Authorization' => 'Bearer ' . self::apiKey(),
+        ])->delete(self::baseUrl() . "/object/" . self::bucket() . "/" . $relativePath);
+
+        return $response->successful();
+    }
+
+    /**
+     * Ekstrak relative path dari full Supabase URL.
+     * Contoh: "https://xxx.supabase.co/storage/v1/object/public/bucket/scans/id/file.webp"
+     *   → return "scans/id/file.webp"
+     * Return null jika URL bukan dari Supabase kita.
+     */
+    public static function extractRelativePath(?string $fullUrl): ?string
+    {
+        if (empty($fullUrl)) {
+            return null;
+        }
+
+        $baseUrl = config('services.supabase.url');
+        $bucket  = self::bucket();
+
+        $prefix = rtrim($baseUrl, '/') . "/storage/v1/object/public/" . $bucket . "/";
+
+        if (!str_starts_with($fullUrl, $prefix)) {
+            return null; // bukan URL Supabase kita
+        }
+
+        return substr($fullUrl, strlen($prefix));
+    }
+
     public static function downloadToTemp(string $source): string
     {
         $tempDir = storage_path('app/temp');

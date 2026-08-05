@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Dashboard;
 use App\Helpers\S3Helper;
 use App\Http\Controllers\BaseController;
 use App\Http\Requests\StoreSaveItemRequest;
+use App\Jobs\AutoDeleteSavedItem;
 use App\Models\Scan;
 use App\Models\ScanSave;
 use App\Services\FirebaseService;
@@ -103,6 +104,9 @@ class SaveItemController extends BaseController
                     'group_label'    => $item['group_label'] ?? null,
                 ]);
             }
+
+            // ─── Jadwalkan auto-delete 14 hari dari sekarang ────────────────
+            AutoDeleteSavedItem::dispatch($scan->id)->delay(now()->addMinutes(2));
 
             return $this->success(null);
         } catch (\Throwable $th) {
