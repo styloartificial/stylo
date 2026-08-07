@@ -106,7 +106,7 @@ class SaveItemController extends BaseController
             }
 
             // ─── Jadwalkan auto-delete 14 hari dari sekarang ────────────────
-            AutoDeleteSavedItem::dispatch($scan->id)->delay(now()->addMinutes(2));
+            AutoDeleteSavedItem::dispatch($scan->id)->delay(now()->addDays(14));
 
             return $this->success(null);
         } catch (\Throwable $th) {
